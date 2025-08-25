@@ -14,6 +14,7 @@ dotenv.config();
 // --- Import Publisher Modules ---
 const { publishToTelegram } = require('./publishers/telegram');
 const { publishToWordPress } = require('./publishers/wordpress');
+const { publishToInstagram } = require('./publishers/instagram');
 
 // --- Configuration & Initializations ---
 const PORT = process.env.PORT || 3000;
@@ -37,7 +38,7 @@ app.use(express.json());
  * @param {object} fileInfo - Information about the file to be published.
  */
 async function executePublishing(payload, fileInfo) {
-    const { platforms, common, telegram, wordpress } = payload;
+    const { platforms, common, telegram, wordpress, instagram } = payload;
     const platformTasks = [];
 
     if (platforms.includes('telegram')) {
@@ -45,6 +46,9 @@ async function executePublishing(payload, fileInfo) {
     }
     if (platforms.includes('wordpress')) {
         platformTasks.push({ name: 'wordpress', task: publishToWordPress(wordpress, common, fileInfo) });
+    }
+    if (platforms.includes('instagram')) {
+        platformTasks.push({ name: 'instagram', task: publishToInstagram(instagram, fileInfo) });
     }
 
     const results = await Promise.allSettled(platformTasks.map(p => p.task));

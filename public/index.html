@@ -39,6 +39,7 @@
                     <div class="platform-selector">
                         <div class="checkbox-group"><input type="checkbox" id="telegram" name="platforms" value="telegram" data-tab="telegramTab"><label for="telegram">تلگرام</label></div>
                         <div class="checkbox-group"><input type="checkbox" id="wordpress" name="platforms" value="wordpress" data-tab="wordpressTab"><label for="wordpress">وردپرس</label></div>
+                        <div class="checkbox-group"><input type="checkbox" id="instagram" name="platforms" value="instagram" data-tab="instagramTab"><label for="instagram">اینستاگرام</label></div>
                     </div>
                 </div>
             </fieldset>
@@ -61,6 +62,22 @@
                         <div class="form-group"><label for="wp_excerpt">چکیده (برای سئو)</label><textarea id="wp_excerpt" name="wp_excerpt" rows="3" placeholder="یک توضیح کوتاه و جذاب برای نمایش در گوگل..."></textarea></div>
                         <div class="form-group"><label>دسته‌بندی‌ها</label><div id="wpCategoriesContainer" class="categories-container"><p class="loading-text">در حال بارگذاری...</p></div></div>
                         <div class="form-group"><label>وضعیت انتشار</label><div class="radio-group" id="wpStatusContainer"><input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked><label for="wpStatusDraft">پیش‌نویس</label><input type="radio" id="wpStatusPublish" name="wpStatus" value="publish"><label for="wpStatusPublish">انتشار فوری</label></div></div>
+                    </div>
+                    <!-- Instagram Tab Content -->
+                    <div id="instagramTab" class="tab-content">
+                        <div class="form-group">
+                            <label for="instagram_caption">کپشن اینستاگرام</label>
+                            <textarea id="instagram_caption" name="instagram_caption" rows="8" placeholder="کپشن اینستاگرام (حداکثر ۲۲۰۰ کاراکتر و ۳۰ هشتگ)..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>نوع انتشار</label>
+                            <div class="radio-group">
+                                <input type="radio" id="igPostTypeFeed" name="instagram_post_type" value="feed" checked>
+                                <label for="igPostTypeFeed">پست فید</label>
+                                <input type="radio" id="igPostTypeStory" name="instagram_post_type" value="story">
+                                <label for="igPostTypeStory">استوری</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </fieldset>
