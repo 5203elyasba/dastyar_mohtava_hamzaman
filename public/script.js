@@ -49,15 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear existing buttons
         tabButtonsContainer.innerHTML = '';
 
-        // Hide all content panes
-        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-
         if (activeTabs.size === 0) {
-            // Hide the container if no tabs are selected
+            // Hide the entire fieldset if no platforms are selected
             document.querySelector('.tabs-fieldset').style.display = 'none';
             return;
         }
 
+        // Show the fieldset if there are active tabs
         document.querySelector('.tabs-fieldset').style.display = 'block';
 
         // Create buttons for active tabs
@@ -73,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => switchTab(tabId));
 
             tabButtonsContainer.appendChild(button);
-            document.getElementById(tabId).style.display = 'block';
         });
 
         // Determine which tab to show
