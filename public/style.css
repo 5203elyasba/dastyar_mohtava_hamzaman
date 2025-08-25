@@ -71,7 +71,7 @@ label, legend {
     color: #495057;
 }
 
-textarea, input[type="file"] {
+textarea, input[type="file"], input[type="text"] {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--border-color);
@@ -79,9 +79,10 @@ textarea, input[type="file"] {
     font-family: 'Vazirmatn', sans-serif;
     font-size: 1rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
-textarea:focus, input[type="file"]:focus {
+textarea:focus, input[type="file"]:focus, input[type="text"]:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
@@ -117,6 +118,34 @@ input[type="checkbox"] {
     height: 1.2em;
     accent-color: var(--primary-color);
 }
+
+/* --- WordPress Options Styling --- */
+.wordpress-options-container {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: -10px; /* Pull it closer to the checkbox */
+    margin-bottom: 10px;
+}
+
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.radio-group label {
+    font-weight: 400;
+    margin-bottom: 0;
+}
+
+.radio-group input[type="radio"] {
+    width: 1.1em;
+    height: 1.1em;
+    accent-color: var(--primary-color);
+}
+
 
 /* --- Button Styling --- */
 #submitBtn {

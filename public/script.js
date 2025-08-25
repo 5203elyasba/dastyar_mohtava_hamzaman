@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const mediaFileInput = document.getElementById('mediaFile');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
 
+    // WordPress specific elements
+    const wordpressCheckbox = document.getElementById('wordpress');
+    const wordpressOptionsContainer = document.getElementById('wordpressOptions');
+    const wpPostTypeRadios = document.querySelectorAll('input[name="wpPostType"]');
+    const wpStatusContainer = document.getElementById('wpStatusContainer');
+
+
     const MAX_FILE_SIZE_MB = 25;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
@@ -24,6 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             fileNameDisplay.textContent = '';
         }
+    });
+
+    // Toggle WordPress options visibility
+    wordpressCheckbox.addEventListener('change', () => {
+        wordpressOptionsContainer.style.display = wordpressCheckbox.checked ? 'block' : 'none';
+    });
+
+    // Toggle WordPress post status visibility based on post type
+    wpPostTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'post') {
+                wpStatusContainer.style.display = 'block';
+            } else {
+                wpStatusContainer.style.display = 'none';
+            }
+        });
     });
 
 
@@ -74,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showStatus(result.message, 'success');
             uploadForm.reset(); // Clear the form fields
             fileNameDisplay.textContent = ''; // Clear file name display
+            wordpressOptionsContainer.style.display = 'none'; // Hide WP options on reset
 
         } catch (error) {
             // --- UI State: Error ---

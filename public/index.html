@@ -20,8 +20,14 @@
         <form id="uploadForm" enctype="multipart/form-data">
 
             <div class="form-group">
-                <label for="caption">کپشن یا متن</label>
-                <textarea id="caption" name="caption" rows="8" placeholder="متن پست خود را اینجا وارد کنید..." required></textarea>
+                <label for="title">عنوان</label>
+                <input type="text" id="title" name="title" placeholder="عنوان پست یا محصول..." required>
+                <small class="field-hint">این عنوان برای پست وبلاگ یا محصول وردپرس استفاده می‌شود.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="caption">کپشن یا متن اصلی</label>
+                <textarea id="caption" name="caption" rows="8" placeholder="متن اصلی پست یا توضیحات محصول را اینجا وارد کنید..." required></textarea>
             </div>
 
             <div class="form-group">
@@ -37,14 +43,39 @@
                     <input type="checkbox" id="telegram" name="platforms" value="telegram" checked>
                     <label for="telegram">تلگرام</label>
                 </div>
-                <!-- NOTE: More platforms can be added here easily in the future -->
-                <!--
                 <div class="checkbox-group">
-                    <input type="checkbox" id="instagram" name="platforms" value="instagram" disabled>
-                    <label for="instagram">اینستاگرام (به زودی)</label>
+                    <input type="checkbox" id="wordpress" name="platforms" value="wordpress">
+                    <label for="wordpress">وردپرس</label>
                 </div>
-                -->
             </fieldset>
+
+            <!-- WordPress Specific Options -->
+            <div id="wordpressOptions" class="wordpress-options-container" style="display: none;">
+                <fieldset class="form-group">
+                    <legend>تنظیمات وردپرس</legend>
+
+                    <div class="form-group">
+                        <label>نوع محتوا:</label>
+                        <div class="radio-group">
+                            <input type="radio" id="wpPostTypePost" name="wpPostType" value="post" checked>
+                            <label for="wpPostTypePost">نوشته وبلاگ</label>
+                            <input type="radio" id="wpPostTypeProduct" name="wpPostType" value="product">
+                            <label for="wpPostTypeProduct">محصول ووکامرس</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="wpStatusContainer">
+                        <label>وضعیت انتشار:</label>
+                        <div class="radio-group">
+                            <input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked>
+                            <label for="wpStatusDraft">ذخیره پیش‌نویس</label>
+                            <input type="radio" id="wpStatusPublish" name="wpStatus" value="publish">
+                            <label for="wpStatusPublish">انتشار فوری</label>
+                        </div>
+                    </div>
+
+                </fieldset>
+            </div>
 
             <button type="submit" id="submitBtn">
                 <span class="btn-text">انتشار محتوا</span>
