@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دستیار محتوای تحریرچی</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>دستیار محتوای تحریرچی</h1>
+            <p>محتوای خود را به صورت همزمان در پلتفرم‌های مختلف منتشر کنید.</p>
+        </header>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label for="caption">کپشن یا متن</label>
+                <textarea id="caption" name="caption" rows="8" placeholder="متن پست خود را اینجا وارد کنید..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="mediaFile">فایل رسانه (عکس یا ویدیو)</label>
+                <input type="file" id="mediaFile" name="mediaFile" accept="image/jpeg, image/png, video/mp4" required>
+                <small id="fileNameDisplay" class="file-name-display"></small>
+                <small class="field-hint">حداکثر حجم مجاز: 25 مگابایت</small>
+            </div>
+
+            <fieldset class="form-group">
+                <legend>انتخاب پلتفرم‌ها</legend>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="telegram" name="platforms" value="telegram" checked>
+                    <label for="telegram">تلگرام</label>
+                </div>
+                <!-- NOTE: More platforms can be added here easily in the future -->
+                <!--
+                <div class="checkbox-group">
+                    <input type="checkbox" id="instagram" name="platforms" value="instagram" disabled>
+                    <label for="instagram">اینستاگرام (به زودی)</label>
+                </div>
+                -->
+            </fieldset>
+
+            <button type="submit" id="submitBtn">
+                <span class="btn-text">انتشار محتوا</span>
+                <span class="spinner" style="display: none;"></span>
+            </button>
+
+        </form>
+
+        <div id="statusArea" class="status-area">
+            <!-- Feedback messages will be displayed here -->
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

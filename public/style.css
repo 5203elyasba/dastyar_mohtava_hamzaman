@@ -1,0 +1,188 @@
+/* --- General Styling & Font --- */
+:root {
+    --primary-color: #007BFF;
+    --primary-hover-color: #0056b3;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --light-gray-color: #f8f9fa;
+    --dark-gray-color: #6c757d;
+    --border-color: #ced4da;
+    --background-color: #eef2f7;
+    --form-background: #ffffff;
+    --text-color: #343a40;
+}
+
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    direction: rtl;
+}
+
+/* --- Main Container & Header --- */
+.container {
+    max-width: 600px;
+    width: 100%;
+    background-color: var(--form-background);
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+header h1 {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+header p {
+    margin-top: 5px;
+    color: var(--dark-gray-color);
+}
+
+/* --- Form Styling --- */
+#uploadForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label, legend {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+textarea, input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.file-name-display {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--dark-gray-color);
+}
+
+.field-hint {
+    font-size: 0.8rem;
+    color: var(--dark-gray-color);
+    margin-top: 4px;
+}
+
+/* --- Checkbox Styling --- */
+fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+input[type="checkbox"] {
+    width: 1.2em;
+    height: 1.2em;
+    accent-color: var(--primary-color);
+}
+
+/* --- Button Styling --- */
+#submitBtn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    height: 48px; /* Fixed height */
+}
+
+#submitBtn:hover {
+    background-color: var(--primary-hover-color);
+}
+
+#submitBtn:active {
+    transform: scale(0.98);
+}
+
+#submitBtn:disabled {
+    background-color: var(--dark-gray-color);
+    cursor: not-allowed;
+}
+
+/* --- Spinner Animation --- */
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- Status Area Styling --- */
+.status-area {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    display: none; /* Hidden by default */
+}
+
+.status-area.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+.status-area.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
