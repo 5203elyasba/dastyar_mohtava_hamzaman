@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دستیار محتوای تحریرچی (نسخه حرفه‌ای)</title>
+    <title>دستیار محتوای تحریرچی (نسخه پیشرفته)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Include Quill.js from CDN -->
+    <!-- Quill.js Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- Jalali Date Picker -->
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
 </head>
 <body>
 
     <div class="container">
         <header>
-            <div id="live-datetime"></div>
             <h1>دستیار محتوای تحریرچی</h1>
             <p>محتوای خود را به صورت حرفه‌ای و بهینه برای هر پلتفرم مدیریت و منتشر کنید.</p>
         </header>
@@ -34,16 +35,10 @@
                     <input type="text" id="alt_text" name="alt_text" placeholder="یک توصیف کوتاه از تصویر برای سئو...">
                 </div>
                 <div class="form-group">
-                    <label>پلتفرم‌های مقصد را انتخاب کنید:</label>
+                    <label>پلتفرم‌های مقصد:</label>
                     <div class="platform-selector">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="telegram" name="platforms" value="telegram" data-tab="telegramTab">
-                            <label for="telegram">تلگرام</label>
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="wordpress" name="platforms" value="wordpress" data-tab="wordpressTab">
-                            <label for="wordpress">وردپرس</label>
-                        </div>
+                        <div class="checkbox-group"><input type="checkbox" id="telegram" name="platforms" value="telegram" data-tab="telegramTab"><label for="telegram">تلگرام</label></div>
+                        <div class="checkbox-group"><input type="checkbox" id="wordpress" name="platforms" value="wordpress" data-tab="wordpressTab"><label for="wordpress">وردپرس</label></div>
                     </div>
                 </div>
             </fieldset>
@@ -53,49 +48,19 @@
                 <legend>۲. محتوای هر پلتفرم</legend>
                 <div class="tab-buttons"></div>
                 <div class="tab-content-container">
-                    <!-- Telegram Tab Content -->
                     <div id="telegramTab" class="tab-content">
                         <div class="form-group">
                             <label for="telegram_caption">کپشن تلگرام</label>
-                            <div class="markdown-toolbar">
-                                <button type="button" class="toolbar-button" data-format="bold"><b>B</b></button>
-                                <button type="button" class="toolbar-button" data-format="italic"><i>I</i></button>
-                            </div>
+                            <div class="markdown-toolbar"><button type="button" class="toolbar-button" data-format="bold"><b>B</b></button><button type="button" class="toolbar-button" data-format="italic"><i>I</i></button></div>
                             <textarea id="telegram_caption" name="telegram_caption" rows="5" placeholder="کپشن مناسب برای تلگرام..."></textarea>
                         </div>
                     </div>
-                    <!-- WordPress Tab Content -->
                     <div id="wordpressTab" class="tab-content">
-                        <div class="form-group">
-                            <label for="wp_title">عنوان نوشته</label>
-                            <input type="text" id="wp_title" name="wp_title" placeholder="عنوان اصلی برای سئو...">
-                        </div>
-                        <div class="form-group">
-                            <label for="wp_content_editor">محتوای اصلی (مقاله)</label>
-                            <!-- This div will be replaced by the Quill editor -->
-                            <div id="wp_content_editor" class="quill-editor"></div>
-                            <input type="hidden" id="wp_content" name="wp_content">
-                        </div>
-                        <div class="form-group">
-                            <label for="wp_excerpt">چکیده / توضیحات متا (برای سئو)</label>
-                            <textarea id="wp_excerpt" name="wp_excerpt" rows="3" placeholder="یک توضیح کوتاه و جذاب برای نمایش در گوگل..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>دسته‌بندی‌ها</label>
-                            <div id="wpCategoriesContainer" class="categories-container">
-                                <!-- Categories will be dynamically loaded here -->
-                                <p class="loading-text">در حال بارگذاری دسته‌بندی‌ها...</p>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>وضعیت انتشار</label>
-                            <div class="radio-group" id="wpStatusContainer">
-                                <input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked>
-                                <label for="wpStatusDraft">پیش‌نویس</label>
-                                <input type="radio" id="wpStatusPublish" name="wpStatus" value="publish">
-                                <label for="wpStatusPublish">انتشار فوری</label>
-                            </div>
-                        </div>
+                        <div class="form-group"><label for="wp_title">عنوان نوشته</label><input type="text" id="wp_title" name="wp_title" placeholder="عنوان اصلی برای سئو..."></div>
+                        <div class="form-group"><label for="wp_content_editor">محتوای اصلی</label><div id="wp_content_editor" class="quill-editor"></div><input type="hidden" id="wp_content" name="wp_content"></div>
+                        <div class="form-group"><label for="wp_excerpt">چکیده (برای سئو)</label><textarea id="wp_excerpt" name="wp_excerpt" rows="3" placeholder="یک توضیح کوتاه و جذاب برای نمایش در گوگل..."></textarea></div>
+                        <div class="form-group"><label>دسته‌بندی‌ها</label><div id="wpCategoriesContainer" class="categories-container"><p class="loading-text">در حال بارگذاری...</p></div></div>
+                        <div class="form-group"><label>وضعیت انتشار</label><div class="radio-group" id="wpStatusContainer"><input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked><label for="wpStatusDraft">پیش‌نویس</label><input type="radio" id="wpStatusPublish" name="wpStatus" value="publish"><label for="wpStatusPublish">انتشار فوری</label></div></div>
                     </div>
                 </div>
             </fieldset>
@@ -103,27 +68,23 @@
             <!-- Step 3: Scheduling Options -->
             <fieldset class="form-group">
                 <legend>۳. زمان‌بندی</legend>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="enableScheduling">
-                    <label for="enableScheduling">ارسال زمان‌بندی شده</label>
-                </div>
+                <div class="checkbox-group"><input type="checkbox" id="enableScheduling"><label for="enableScheduling">ارسال زمان‌بندی شده</label></div>
                 <div class="form-group" id="scheduleTimeContainer" style="display: none; margin-top: 15px;">
-                    <label for="scheduleTime">تاریخ و زمان انتشار را انتخاب کنید:</label>
-                    <input type="datetime-local" id="scheduleTime" name="scheduleTime">
+                    <label for="scheduleTime">تاریخ و زمان انتشار:</label>
+                    <input type="text" id="scheduleTime" name="scheduleTime" class="jalali-datepicker" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
                 </div>
             </fieldset>
 
-            <button type="submit" id="submitBtn">
-                <span class="btn-text">ارسال</span>
-                <span class="spinner" style="display: none;"></span>
-            </button>
+            <button type="submit" id="submitBtn"><span class="btn-text">ارسال</span><span class="spinner" style="display: none;"></span></button>
         </form>
 
         <div id="statusArea" class="status-area"></div>
     </div>
 
-    <!-- Include Quill.js from CDN -->
+    <!-- 3rd Party Libraries -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
+    <!-- Main Application Script -->
     <script src="script.js"></script>
 </body>
 </html>

@@ -9,58 +9,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabButtonsContainer = document.querySelector('.tab-buttons');
     const wpCategoriesContainer = document.getElementById('wpCategoriesContainer');
     const hiddenWpContentInput = document.getElementById('wp_content');
+    const enableSchedulingCheckbox = document.getElementById('enableScheduling');
+    const scheduleTimeContainer = document.getElementById('scheduleTimeContainer');
+    const scheduleTimeInput = document.getElementById('scheduleTime');
 
     // --- State Management ---
     let activeTabs = new Set();
     let quillEditor = null;
     let areCategoriesLoaded = false;
 
-    // --- Quill.js Initialization ---
+    // --- Library Initializations ---
     function initializeQuillEditor() {
-        if (!quillEditor) {
-            quillEditor = new Quill('#wp_content_editor', {
-                theme: 'snow',
-                placeholder: 'متن کامل مقاله یا توضیحات محصول را اینجا بنویسید...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'link'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                }
-            });
-            // Update hidden input on text change
-            quillEditor.on('text-change', () => {
-                hiddenWpContentInput.value = quillEditor.root.innerHTML;
-            });
-        }
+        if (quillEditor) return;
+        quillEditor = new Quill('#wp_content_editor', {
+            theme: 'snow',
+            placeholder: 'متن کامل مقاله را اینجا بنویسید...',
+            modules: { toolbar: [[{ 'header': [1, 2, false] }], ['bold', 'italic', 'link'], [{ 'list': 'ordered'}, { 'list': 'bullet' }]] }
+        });
+        quillEditor.on('text-change', () => { hiddenWpContentInput.value = quillEditor.root.innerHTML; });
     }
 
-    // --- Dynamic Category Loading ---
+    function initializeJalaliDatePicker() {
+        jalaliDatepicker.startWatch({
+            selector: '.jalali-datepicker',
+            time: true,
+            hasSecond: false
+        });
+    }
+
+    // --- Core Functions ---
     async function loadWordPressCategories() {
-        if (areCategoriesLoaded) return; // Load only once
+        if (areCategoriesLoaded) return;
         wpCategoriesContainer.innerHTML = '<p class="loading-text">در حال بارگذاری دسته‌بندی‌ها...</p>';
         try {
             const response = await fetch('/api/wordpress/categories');
             if (!response.ok) throw new Error('Failed to fetch categories.');
-
             const categories = await response.json();
-
-            wpCategoriesContainer.innerHTML = ''; // Clear loading text
+            wpCategoriesContainer.innerHTML = '';
             if (categories.length === 0) {
                 wpCategoriesContainer.innerHTML = '<p class="loading-text">دسته‌بندی‌ای پیدا نشد.</p>';
                 return;
             }
-
             categories.forEach(category => {
                 const div = document.createElement('div');
                 div.className = 'checkbox-group';
-                div.innerHTML = `
-                    <input type="checkbox" id="wp_cat_${category.id}" name="wp_categories" value="${category.id}">
-                    <label for="wp_cat_${category.id}">${category.name}</label>
-                `;
+                div.innerHTML = `<input type="checkbox" id="wp_cat_${category.id}" name="wp_categories" value="${category.id}"><label for="wp_cat_${category.id}">${category.name}</label>`;
                 wpCategoriesContainer.appendChild(div);
             });
             areCategoriesLoaded = true;
@@ -70,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Tab Management ---
     function switchTab(tabId) {
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -79,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabButton && tabContent) {
             tabButton.classList.add('active');
             tabContent.classList.add('active');
-            // Lazy load categories and initialize editor when WP tab is shown
             if (tabId === 'wordpressTab') {
                 initializeQuillEditor();
                 loadWordPressCategories();
@@ -93,10 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         platformCheckboxes.forEach(checkbox => {
             if (checkbox.checked) activeTabs.add(checkbox.dataset.tab);
         });
-
         tabButtonsContainer.innerHTML = '';
         document.querySelector('.tabs-fieldset').style.display = activeTabs.size > 0 ? 'block' : 'none';
-
         activeTabs.forEach(tabId => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -106,18 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => switchTab(tabId));
             tabButtonsContainer.appendChild(button);
         });
-
         let tabToShow = currentActiveTab && activeTabs.has(currentActiveTab) ? currentActiveTab : [...activeTabs][0];
         if (tabToShow) switchTab(tabToShow);
     }
 
-    // --- Form Data Aggregation ---
     function aggregateFormData() {
         const data = {
             platforms: [...activeTabs].map(id => id.replace('Tab', '')),
-            common: {
-                alt_text: document.getElementById('alt_text').value
-            }
+            common: { alt_text: document.getElementById('alt_text').value }
         };
         data.platforms.forEach(platform => {
             const tabId = `${platform}Tab`;
@@ -132,67 +117,62 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else if (el.type === 'radio') {
                         if (el.checked) data[platform][el.name] = el.value;
-                    } else {
-                         if(el.name !== 'wp_content') data[platform][el.name] = el.value;
+                    } else if (el.name !== 'wp_content') {
+                        data[platform][el.name] = el.value;
                     }
                 }
             });
-             if (platform === 'wordpress' && quillEditor) {
+            if (platform === 'wordpress' && quillEditor) {
                 data.wordpress.wp_content = quillEditor.root.innerHTML;
             }
         });
         return data;
     }
 
-    // --- Main Submit Handler ---
     async function handleFormSubmit(e) {
         e.preventDefault();
         setLoading(true);
-
         const file = mediaFileInput.files[0];
         if (!file) {
             displayPublicationResults({ success: false, message: 'لطفاً یک فایل رسانه انتخاب کنید.' });
-            setLoading(false);
-            return;
+            return setLoading(false);
         }
-
         const textData = aggregateFormData();
         if (textData.platforms.length === 0) {
             displayPublicationResults({ success: false, message: 'لطفاً حداقل یک پلتفرم را انتخاب کنید.' });
-            setLoading(false);
-            return;
+            return setLoading(false);
         }
-
         const formData = new FormData();
         formData.append('mediaFile', file);
         formData.append('data', JSON.stringify(textData));
-
-        const enableSchedulingCheckbox = document.getElementById('enableScheduling');
-        const scheduleTimeInput = document.getElementById('scheduleTime');
         let endpoint = '/publish';
-        let isScheduling = false;
-
         if (enableSchedulingCheckbox.checked) {
             if (!scheduleTimeInput.value) {
                 displayPublicationResults({ success: false, message: 'لطفاً تاریخ و زمان زمان‌بندی را انتخاب کنید.' });
-                setLoading(false);
-                return;
+                return setLoading(false);
+            }
+            // The date picker gives a Jalali string. We need to convert it to a standard format.
+            // The library instance is on the element: el.jalaliDatepicker.getMoment()
+            const datepickerInstance = scheduleTimeInput.jalaliDatepicker;
+            if (datepickerInstance) {
+                const momentDate = datepickerInstance.getMoment();
+                formData.append('scheduleTime', momentDate.toISOString());
+            } else {
+                 displayPublicationResults({ success: false, message: 'خطا در خواندن تاریخ زمان‌بندی.' });
+                 return setLoading(false);
             }
             endpoint = '/schedule';
-            formData.append('scheduleTime', scheduleTimeInput.value);
-            isScheduling = true;
         }
-
         try {
             const response = await fetch(endpoint, { method: 'POST', body: formData });
             const result = await response.json();
             displayPublicationResults(result);
             if (result.success) {
                 uploadForm.reset();
-                if(quillEditor) quillEditor.setText('');
+                if (quillEditor) quillEditor.setText('');
                 platformCheckboxes.forEach(cb => cb.checked = false);
                 enableSchedulingCheckbox.checked = false;
-                scheduleTimeInput.style.display = 'none';
+                scheduleTimeContainer.style.display = 'none';
                 updateTabs();
             }
         } catch (error) {
@@ -203,7 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- UI Helpers ---
+    function applyMarkdown(format) {
+        const textarea = document.getElementById('telegram_caption');
+        const start = textarea.selectionStart, end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        const wrapper = format === 'bold' ? '*' : '_';
+        textarea.setRangeText(`${wrapper}${selectedText}${wrapper}`, start, end, 'end');
+        textarea.focus();
+    }
+
     function displayPublicationResults(result) {
         let html = `<h3>${result.message}</h3>`;
         if (result.details && result.details.length > 0) {
@@ -228,59 +216,17 @@ document.addEventListener('DOMContentLoaded', () => {
         spinner.style.display = isLoading ? 'inline-block' : 'none';
     }
 
-    // --- Markdown Toolbar Logic ---
-    function applyMarkdown(format) {
-        const textarea = document.getElementById('telegram_caption');
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selectedText = textarea.value.substring(start, end);
-        let replacement = '';
-
-        if (format === 'bold') {
-            replacement = `*${selectedText}*`;
-        } else if (format === 'italic') {
-            replacement = `_${selectedText}_`;
-        }
-
-        textarea.setRangeText(replacement, start, end, 'end');
-        textarea.focus();
-    }
-
-    // --- Live Clock ---
-    function updateLiveDateTime() {
-        const dateTimeContainer = document.getElementById('live-datetime');
-        if (!dateTimeContainer) return;
-        const now = new Date();
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        const dateString = now.toLocaleDateString('fa-IR', dateOptions);
-        const timeString = now.toLocaleTimeString('en-US', timeOptions); // Use en-US for consistent LTR numbers
-        dateTimeContainer.textContent = `${dateString} - ${timeString}`;
-    }
-
-    // --- Initial Setup ---
-    const enableSchedulingCheckbox = document.getElementById('enableScheduling');
-    const scheduleTimeContainer = document.getElementById('scheduleTimeContainer');
-
+    // --- Event Listeners & Initial Calls ---
     platformCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateTabs));
     mediaFileInput.addEventListener('change', () => {
         fileNameDisplay.textContent = mediaFileInput.files.length > 0 ? `فایل: ${mediaFileInput.files[0].name}` : '';
     });
     uploadForm.addEventListener('submit', handleFormSubmit);
-
-    document.querySelectorAll('.toolbar-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            applyMarkdown(e.currentTarget.dataset.format);
-        });
-    });
-
+    document.querySelectorAll('.toolbar-button').forEach(button => button.addEventListener('click', e => applyMarkdown(e.currentTarget.dataset.format)));
     enableSchedulingCheckbox.addEventListener('change', () => {
         scheduleTimeContainer.style.display = enableSchedulingCheckbox.checked ? 'block' : 'none';
     });
 
-    // Initial call to set up UI state
+    initializeJalaliDatePicker();
     updateTabs();
-    // Initial call and start interval for the live clock
-    updateLiveDateTime();
-    setInterval(updateLiveDateTime, 1000);
 });
