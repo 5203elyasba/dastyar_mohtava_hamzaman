@@ -29,7 +29,7 @@ async function publishToTelegram(telegramData, file) {
     const formData = new FormData();
     formData.append('chat_id', TELEGRAM_CHAT_ID);
     formData.append('caption', telegram_caption);
-    // Note: We are not setting parse_mode anymore, to allow the user to use raw text or their own Markdown/HTML.
+    formData.append('parse_mode', 'Markdown'); // Re-enabling Markdown parsing.
     formData.append(fileType, fileStream, file.originalname);
 
     try {

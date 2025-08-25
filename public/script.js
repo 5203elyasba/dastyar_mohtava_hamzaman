@@ -167,14 +167,32 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('mediaFile', file);
         formData.append('data', JSON.stringify(textData));
 
+        const enableSchedulingCheckbox = document.getElementById('enableScheduling');
+        const scheduleTimeInput = document.getElementById('scheduleTime');
+        let endpoint = '/publish';
+        let isScheduling = false;
+
+        if (enableSchedulingCheckbox.checked) {
+            if (!scheduleTimeInput.value) {
+                displayPublicationResults({ success: false, message: 'لطفاً تاریخ و زمان زمان‌بندی را انتخاب کنید.' });
+                setLoading(false);
+                return;
+            }
+            endpoint = '/schedule';
+            formData.append('scheduleTime', scheduleTimeInput.value);
+            isScheduling = true;
+        }
+
         try {
-            const response = await fetch('/publish', { method: 'POST', body: formData });
+            const response = await fetch(endpoint, { method: 'POST', body: formData });
             const result = await response.json();
             displayPublicationResults(result);
             if (result.success) {
                 uploadForm.reset();
                 if(quillEditor) quillEditor.setText('');
                 platformCheckboxes.forEach(cb => cb.checked = false);
+                enableSchedulingCheckbox.checked = false;
+                scheduleTimeInput.style.display = 'none';
                 updateTabs();
             }
         } catch (error) {
@@ -210,11 +228,43 @@ document.addEventListener('DOMContentLoaded', () => {
         spinner.style.display = isLoading ? 'inline-block' : 'none';
     }
 
+    // --- Markdown Toolbar Logic ---
+    function applyMarkdown(format) {
+        const textarea = document.getElementById('telegram_caption');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        let replacement = '';
+
+        if (format === 'bold') {
+            replacement = `*${selectedText}*`;
+        } else if (format === 'italic') {
+            replacement = `_${selectedText}_`;
+        }
+
+        textarea.setRangeText(replacement, start, end, 'end');
+        textarea.focus();
+    }
+
     // --- Initial Setup ---
+    const enableSchedulingCheckbox = document.getElementById('enableScheduling');
+    const scheduleTimeContainer = document.getElementById('scheduleTimeContainer');
+
     platformCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateTabs));
     mediaFileInput.addEventListener('change', () => {
         fileNameDisplay.textContent = mediaFileInput.files.length > 0 ? `فایل: ${mediaFileInput.files[0].name}` : '';
     });
     uploadForm.addEventListener('submit', handleFormSubmit);
+
+    document.querySelectorAll('.toolbar-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            applyMarkdown(e.currentTarget.dataset.format);
+        });
+    });
+
+    enableSchedulingCheckbox.addEventListener('change', () => {
+        scheduleTimeContainer.style.display = enableSchedulingCheckbox.checked ? 'block' : 'none';
+    });
+
     updateTabs();
 });

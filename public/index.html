@@ -56,6 +56,10 @@
                     <div id="telegramTab" class="tab-content">
                         <div class="form-group">
                             <label for="telegram_caption">کپشن تلگرام</label>
+                            <div class="markdown-toolbar">
+                                <button type="button" class="toolbar-button" data-format="bold"><b>B</b></button>
+                                <button type="button" class="toolbar-button" data-format="italic"><i>I</i></button>
+                            </div>
                             <textarea id="telegram_caption" name="telegram_caption" rows="5" placeholder="کپشن مناسب برای تلگرام..."></textarea>
                         </div>
                     </div>
@@ -95,8 +99,21 @@
                 </div>
             </fieldset>
 
+            <!-- Step 3: Scheduling Options -->
+            <fieldset class="form-group">
+                <legend>۳. زمان‌بندی</legend>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableScheduling">
+                    <label for="enableScheduling">ارسال زمان‌بندی شده</label>
+                </div>
+                <div class="form-group" id="scheduleTimeContainer" style="display: none; margin-top: 15px;">
+                    <label for="scheduleTime">تاریخ و زمان انتشار را انتخاب کنید:</label>
+                    <input type="datetime-local" id="scheduleTime" name="scheduleTime">
+                </div>
+            </fieldset>
+
             <button type="submit" id="submitBtn">
-                <span class="btn-text">انتشار محتوا</span>
+                <span class="btn-text">ارسال</span>
                 <span class="spinner" style="display: none;"></span>
             </button>
         </form>
