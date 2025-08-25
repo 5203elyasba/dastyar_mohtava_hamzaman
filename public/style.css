@@ -215,3 +215,43 @@ input[type="checkbox"] {
     border: 1px solid #f5c6cb;
     display: block;
 }
+
+/* --- Detailed Status Report Styling --- */
+.status-area h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.status-area ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: right;
+}
+
+.status-area li {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.status-area li:last-child {
+    border-bottom: none;
+}
+
+.status-area .status-icon-success {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.status-area .status-icon-error {
+    color: var(--error-color);
+    font-weight: bold;
+}
+
+.status-area .error-message {
+    font-size: 0.85rem;
+    color: #721c24;
+    display: block;
+    margin-top: 5px;
+}

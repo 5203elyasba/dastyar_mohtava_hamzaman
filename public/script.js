@@ -88,21 +88,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
 
-            if (!response.ok) {
-                // If response is not 2xx, throw an error to be caught by the catch block
-                throw new Error(result.message || 'خطایی در سرور رخ داد.');
-            }
+            const result = await response.json();
 
-            // --- UI State: Success ---
-            showStatus(result.message, 'success');
-            uploadForm.reset(); // Clear the form fields
-            fileNameDisplay.textContent = ''; // Clear file name display
-            wordpressOptionsContainer.style.display = 'none'; // Hide WP options on reset
+            // Display detailed results from the server
+            displayPublicationResults(result);
+
+            // If the overall operation was a success, reset the form.
+            if (result.success) {
+                uploadForm.reset();
+                fileNameDisplay.textContent = '';
+                wordpressOptionsContainer.style.display = 'none';
+            }
 
         } catch (error) {
             // --- UI State: Error ---
+            // This catches network errors or issues with parsing the response.
             console.error('Submission Error:', error);
-            showStatus(error.message, 'error');
+            showStatus(`<p><strong>خطای ارتباط با سرور:</strong> ${error.message}</p>`, 'error');
         } finally {
             // --- UI State: End Loading ---
             setLoading(false);
@@ -129,13 +131,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Displays a status message to the user.
-     * @param {string} message - The message to display.
+     * Displays a status message to the user, accepting HTML content.
+     * @param {string} htmlContent - The HTML content to display.
      * @param {'success' | 'error'} type - The type of message.
      */
-    function showStatus(message, type) {
-        statusArea.textContent = message;
+    function showStatus(htmlContent, type) {
+        statusArea.innerHTML = htmlContent;
         statusArea.className = `status-area ${type}`; // Applies .success or .error class
+    }
+
+    /**
+     * Renders the detailed results from the server's response.
+     * @param {object} result - The JSON response from the server.
+     */
+    function displayPublicationResults(result) {
+        let html = `<h3>${result.message}</h3>`;
+        if (result.details && result.details.length > 0) {
+            html += '<ul>';
+            result.details.forEach(detail => {
+                const status = detail.success
+                    ? `<span class="status-icon-success">✔</span> موفق`
+                    : `<span class="status-icon-error">✖</span> ناموفق`;
+
+                html += `<li><strong>${detail.platform}:</strong> ${status}`;
+                if (!detail.success) {
+                    html += `<br><small class="error-message">${detail.message}</small>`;
+                }
+                html += '</li>';
+            });
+            html += '</ul>';
+        }
+        showStatus(html, result.success ? 'success' : 'error');
     }
 
     /**

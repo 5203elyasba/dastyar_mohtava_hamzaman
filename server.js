@@ -51,7 +51,7 @@ app.post('/publish', upload.single('mediaFile'), async (req, res) => {
     if (platforms.includes('telegram')) {
         platformTasks.push({
             name: 'telegram',
-            task: publishToTelegram({ caption: data.caption, file })
+            task: publishToTelegram({ title: data.title, caption: data.caption, file })
         });
     }
     if (platforms.includes('wordpress')) {

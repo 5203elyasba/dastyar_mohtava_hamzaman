@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 // --- WordPress Configuration ---
-const WORDPRESS_URL = process.env.WORDPRESS_URL;
+// Normalize the URL by removing any trailing slash
+const WORDPRESS_URL = (process.env.WORDPRESS_URL || '').replace(/\/$/, "");
 const WORDPRESS_USERNAME = process.env.WORDPRESS_USERNAME;
 const WORDPRESS_APP_PASSWORD = process.env.WORDPRESS_APP_PASSWORD;
 
