@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دستیار محتوای تحریرچی (نسخه جدید)</title>
+    <title>دستیار محتوای تحریرچی (نسخه حرفه‌ای)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Include Quill.js from CDN -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
 
     <div class="container">
         <header>
             <h1>دستیار محتوای تحریرچی</h1>
-            <p>محتوای خود را به صورت بهینه برای هر پلتفرم مدیریت و منتشر کنید.</p>
+            <p>محتوای خود را به صورت حرفه‌ای و بهینه برای هر پلتفرم مدیریت و منتشر کنید.</p>
         </header>
 
         <form id="uploadForm">
@@ -25,6 +27,10 @@
                     <label for="mediaFile">فایل رسانه (عکس یا ویدیو)</label>
                     <input type="file" id="mediaFile" name="mediaFile" accept="image/jpeg, image/png, video/mp4" required>
                     <small id="fileNameDisplay" class="file-name-display"></small>
+                </div>
+                <div class="form-group">
+                    <label for="alt_text">متن جایگزین تصویر (Alt Text)</label>
+                    <input type="text" id="alt_text" name="alt_text" placeholder="یک توصیف کوتاه از تصویر برای سئو...">
                 </div>
                 <div class="form-group">
                     <label>پلتفرم‌های مقصد را انتخاب کنید:</label>
@@ -44,9 +50,7 @@
             <!-- Step 2: Platform-Specific Tabs -->
             <fieldset class="form-group tabs-fieldset">
                 <legend>۲. محتوای هر پلتفرم</legend>
-                <div class="tab-buttons">
-                    <!-- Tab buttons will be dynamically inserted here by JS -->
-                </div>
+                <div class="tab-buttons"></div>
                 <div class="tab-content-container">
                     <!-- Telegram Tab Content -->
                     <div id="telegramTab" class="tab-content">
@@ -58,29 +62,28 @@
                     <!-- WordPress Tab Content -->
                     <div id="wordpressTab" class="tab-content">
                         <div class="form-group">
-                            <label for="wp_title">عنوان نوشته/محصول</label>
+                            <label for="wp_title">عنوان نوشته</label>
                             <input type="text" id="wp_title" name="wp_title" placeholder="عنوان اصلی برای سئو...">
                         </div>
                         <div class="form-group">
-                            <label for="wp_content">محتوای اصلی (مقاله)</label>
-                            <textarea id="wp_content" name="wp_content" rows="12" placeholder="متن کامل مقاله یا توضیحات محصول..."></textarea>
+                            <label for="wp_content_editor">محتوای اصلی (مقاله)</label>
+                            <!-- This div will be replaced by the Quill editor -->
+                            <div id="wp_content_editor" class="quill-editor"></div>
+                            <input type="hidden" id="wp_content" name="wp_content">
                         </div>
                         <div class="form-group">
                             <label for="wp_excerpt">چکیده / توضیحات متا (برای سئو)</label>
                             <textarea id="wp_excerpt" name="wp_excerpt" rows="3" placeholder="یک توضیح کوتاه و جذاب برای نمایش در گوگل..."></textarea>
                         </div>
-                         <div class="form-group">
-                            <label for="wp_tags">برچسب‌ها (با کاما جدا کنید)</label>
-                            <input type="text" id="wp_tags" name="wp_tags" placeholder="مثال: آموزش, بازاریابی, ...">
+                        <div class="form-group">
+                            <label>دسته‌بندی‌ها</label>
+                            <div id="wpCategoriesContainer" class="categories-container">
+                                <!-- Categories will be dynamically loaded here -->
+                                <p class="loading-text">در حال بارگذاری دسته‌بندی‌ها...</p>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>نوع و وضعیت:</label>
-                             <div class="radio-group">
-                                <input type="radio" id="wpPostTypePost" name="wpPostType" value="post" checked>
-                                <label for="wpPostTypePost">نوشته وبلاگ</label>
-                                <input type="radio" id="wpPostTypeProduct" name="wpPostType" value="product">
-                                <label for="wpPostTypeProduct">محصول ووکامرس</label>
-                            </div>
+                            <label>وضعیت انتشار</label>
                             <div class="radio-group" id="wpStatusContainer">
                                 <input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked>
                                 <label for="wpStatusDraft">پیش‌نویس</label>
@@ -101,6 +104,8 @@
         <div id="statusArea" class="status-area"></div>
     </div>
 
+    <!-- Include Quill.js from CDN -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

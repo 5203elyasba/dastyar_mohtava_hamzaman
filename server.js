@@ -4,6 +4,7 @@ const multer = require('multer');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const fs = require('fs');
+const axios = require('axios'); // Added for the new categories endpoint
 
 // --- Load Environment Variables ---
 dotenv.config();
@@ -23,7 +24,38 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// --- API Endpoint ---
+// --- API Endpoints ---
+
+/**
+ * @route GET /api/wordpress/categories
+ * @description Fetches post categories from the user's WordPress site.
+ */
+app.get('/api/wordpress/categories', async (req, res) => {
+    const { WORDPRESS_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD } = process.env;
+
+    if (!WORDPRESS_URL || !WORDPRESS_USERNAME || !WORDPRESS_APP_PASSWORD) {
+        return res.status(500).json({ message: 'WordPress credentials are not configured in .env file.' });
+    }
+
+    // Fetch up to 100 categories. The 'per_page' parameter is used for pagination.
+    const categoriesEndpoint = `${WORDPRESS_URL.replace(/\/$/, "")}/wp-json/wp/v2/categories?per_page=100`;
+
+    try {
+        const response = await axios.get(categoriesEndpoint, {
+            auth: {
+                username: WORDPRESS_USERNAME,
+                password: WORDPRESS_APP_PASSWORD, // Application Password
+            },
+        });
+        // We only need the id and name for the frontend.
+        const categories = response.data.map(cat => ({ id: cat.id, name: cat.name }));
+        res.json(categories);
+    } catch (error) {
+        console.error("Error fetching WordPress categories:", error.response?.data?.message || error.message);
+        res.status(500).json({ message: `Failed to fetch categories: ${error.response?.data?.message || error.message}` });
+    }
+});
+
 
 /**
  * @route POST /publish
@@ -62,7 +94,7 @@ app.post('/publish', upload.single('mediaFile'), async (req, res) => {
     if (platforms.includes('wordpress')) {
         platformTasks.push({
             name: 'wordpress',
-            task: publishToWordPress(payload.wordpress, file)
+            task: publishToWordPress(payload.wordpress, payload.common, file)
         });
     }
 

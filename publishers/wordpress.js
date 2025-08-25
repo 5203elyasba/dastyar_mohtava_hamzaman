@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 
 // --- WordPress Configuration ---
-// Normalize the URL by removing any trailing slash
 const WORDPRESS_URL = (process.env.WORDPRESS_URL || '').replace(/\/$/, "");
 const WORDPRESS_USERNAME = process.env.WORDPRESS_USERNAME;
 const WORDPRESS_APP_PASSWORD = process.env.WORDPRESS_APP_PASSWORD;
@@ -11,25 +10,25 @@ const WORDPRESS_APP_PASSWORD = process.env.WORDPRESS_APP_PASSWORD;
 // --- Helper function for Authentication ---
 const getAuthHeader = () => {
     if (!WORDPRESS_USERNAME || !WORDPRESS_APP_PASSWORD) {
-        throw new Error("WordPress username or application password is not defined in .env file.");
+        throw new Error("WordPress credentials are not defined in .env file.");
     }
-    // WordPress Application Passwords use Basic Authentication.
     const credentials = Buffer.from(`${WORDPRESS_USERNAME}:${WORDPRESS_APP_PASSWORD}`).toString('base64');
     return `Basic ${credentials}`;
 };
 
 /**
- * Uploads a media file to the WordPress Media Library.
+ * Uploads a media file to the WordPress Media Library with Alt Text.
  * @param {object} file - The file object from Multer.
- * @param {string} title - The title for the media item.
+ * @param {string} alt_text - The alt text for the image.
  * @returns {Promise<number>} The ID of the uploaded media item.
  */
-async function uploadMedia(file, title) {
+async function uploadMedia(file, alt_text) {
     console.log('Uploading media to WordPress...');
     const mediaEndpoint = `${WORDPRESS_URL}/wp-json/wp/v2/media`;
     const fileStream = fs.createReadStream(file.path);
 
     try {
+        // First, upload the file itself
         const response = await axios.post(mediaEndpoint, fileStream, {
             headers: {
                 'Authorization': getAuthHeader(),
@@ -37,8 +36,19 @@ async function uploadMedia(file, title) {
                 'Content-Disposition': `attachment; filename="${path.basename(file.originalname)}"`
             }
         });
-        console.log(`Media uploaded successfully. Media ID: ${response.data.id}`);
-        return response.data.id; // Return the new Media ID
+
+        const mediaId = response.data.id;
+        console.log(`Media uploaded successfully. Media ID: ${mediaId}`);
+
+        // If alt_text is provided, make a second request to update the media item with it.
+        if (alt_text) {
+            console.log(`Adding alt text to media item ${mediaId}...`);
+            await axios.post(`${mediaEndpoint}/${mediaId}`, { alt_text }, {
+                headers: { 'Authorization': getAuthHeader() }
+            });
+        }
+
+        return mediaId;
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message;
         console.error('WordPress Media Upload Error:', errorMessage);
@@ -47,54 +57,34 @@ async function uploadMedia(file, title) {
 }
 
 /**
- * Publishes content to WordPress using data from its specific tab.
+ * Publishes a blog post to WordPress.
  * @param {object} wpData - The data object from the WordPress tab.
+ * @param {object} commonData - The common data object with alt_text.
  * @param {object} file - The uploaded file object from Multer.
  * @returns {Promise<object>} A promise that resolves with the result from the WordPress API.
  */
-async function publishToWordPress(wpData, file) {
-    const { wp_title, wp_content, wp_excerpt, wp_tags, wpPostType, wpStatus } = wpData;
-    console.log(`Preparing to publish to WordPress as a '${wpPostType}'...`);
+async function publishToWordPress(wpData, commonData, file) {
+    const { wp_title, wp_content, wp_excerpt, wp_categories, wpStatus } = wpData;
+    const { alt_text } = commonData;
+    console.log(`Preparing to publish blog post to WordPress...`);
 
-    if (!WORDPRESS_URL) {
-        throw new Error("WORDPRESS_URL is not defined in .env file.");
-    }
+    if (!WORDPRESS_URL) throw new Error("WORDPRESS_URL is not defined in .env file.");
 
-    // Step 1: Upload the media file and get its ID.
-    const mediaId = await uploadMedia(file, wp_title);
+    // Step 1: Upload the media file with its alt text.
+    const mediaId = await uploadMedia(file, alt_text);
 
-    // Step 2: Create the post or product and associate the media with it.
-    let postEndpoint;
-    let postData;
+    // Step 2: Create the blog post.
+    const postEndpoint = `${WORDPRESS_URL}/wp-json/wp/v2/posts`;
+    const postData = {
+        title: wp_title,
+        content: wp_content,
+        excerpt: wp_excerpt,
+        status: wpStatus,
+        featured_media: mediaId,
+        categories: wp_categories || [], // Pass the array of category IDs
+    };
 
-    if (wpPostType === 'post') {
-        postEndpoint = `${WORDPRESS_URL}/wp-json/wp/v2/posts`;
-        postData = {
-            title: wp_title,
-            content: wp_content,
-            excerpt: wp_excerpt,
-            status: wpStatus, // 'draft' or 'publish'
-            featured_media: mediaId,
-            // FUTURE-PROOFING: Handling tags requires finding/creating tag IDs.
-            // This is a multi-step process and is omitted for now.
-            // A future implementation would look like:
-            // const tagIds = await getTagIds(wp_tags);
-            // tags: tagIds,
-        };
-    } else if (wpPostType === 'product') {
-        postEndpoint = `${WORDPRESS_URL}/wp-json/wc/v3/products`;
-        postData = {
-            name: wp_title,
-            description: wp_content,
-            short_description: wp_excerpt,
-            status: 'draft', // Products are always created as draft for safety.
-            images: [{ id: mediaId }],
-        };
-    } else {
-        throw new Error(`Unsupported WordPress post type: ${wpPostType}`);
-    }
-
-    console.log(`Creating ${wpPostType} on WordPress...`);
+    console.log(`Creating blog post on WordPress...`);
     try {
         const response = await axios.post(postEndpoint, postData, {
             headers: {
@@ -106,7 +96,7 @@ async function publishToWordPress(wpData, file) {
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message;
-        console.error(`WordPress ${wpPostType} Creation Error:`, errorMessage);
+        console.error(`WordPress Post Creation Error:`, errorMessage);
         throw new Error(`WordPress Post Creation Failed: ${errorMessage}`);
     }
 }

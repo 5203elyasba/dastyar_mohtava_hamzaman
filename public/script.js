@@ -7,150 +7,173 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const platformCheckboxes = document.querySelectorAll('input[name="platforms"]');
     const tabButtonsContainer = document.querySelector('.tab-buttons');
-    const tabContentContainer = document.querySelector('.tab-content-container');
+    const wpCategoriesContainer = document.getElementById('wpCategoriesContainer');
+    const hiddenWpContentInput = document.getElementById('wp_content');
 
     // --- State Management ---
     let activeTabs = new Set();
+    let quillEditor = null;
+    let areCategoriesLoaded = false;
 
-    // --- Functions ---
+    // --- Quill.js Initialization ---
+    function initializeQuillEditor() {
+        if (!quillEditor) {
+            quillEditor = new Quill('#wp_content_editor', {
+                theme: 'snow',
+                placeholder: 'متن کامل مقاله یا توضیحات محصول را اینجا بنویسید...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'link'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+            // Update hidden input on text change
+            quillEditor.on('text-change', () => {
+                hiddenWpContentInput.value = quillEditor.root.innerHTML;
+            });
+        }
+    }
 
-    /**
-     * Switches the view to the specified tab.
-     * @param {string} tabId - The ID of the tab content to show.
-     */
+    // --- Dynamic Category Loading ---
+    async function loadWordPressCategories() {
+        if (areCategoriesLoaded) return; // Load only once
+        wpCategoriesContainer.innerHTML = '<p class="loading-text">در حال بارگذاری دسته‌بندی‌ها...</p>';
+        try {
+            const response = await fetch('/api/wordpress/categories');
+            if (!response.ok) throw new Error('Failed to fetch categories.');
+
+            const categories = await response.json();
+
+            wpCategoriesContainer.innerHTML = ''; // Clear loading text
+            if (categories.length === 0) {
+                wpCategoriesContainer.innerHTML = '<p class="loading-text">دسته‌بندی‌ای پیدا نشد.</p>';
+                return;
+            }
+
+            categories.forEach(category => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-group';
+                div.innerHTML = `
+                    <input type="checkbox" id="wp_cat_${category.id}" name="wp_categories" value="${category.id}">
+                    <label for="wp_cat_${category.id}">${category.name}</label>
+                `;
+                wpCategoriesContainer.appendChild(div);
+            });
+            areCategoriesLoaded = true;
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            wpCategoriesContainer.innerHTML = '<p class="loading-text" style="color: red;">خطا در بارگذاری دسته‌بندی‌ها.</p>';
+        }
+    }
+
+    // --- Tab Management ---
     function switchTab(tabId) {
-        // Deactivate all tab buttons and content
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-        // Activate the selected tab and its content
         const tabButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
         const tabContent = document.getElementById(tabId);
         if (tabButton && tabContent) {
             tabButton.classList.add('active');
             tabContent.classList.add('active');
+            // Lazy load categories and initialize editor when WP tab is shown
+            if (tabId === 'wordpressTab') {
+                initializeQuillEditor();
+                loadWordPressCategories();
+            }
         }
     }
 
-    /**
-     * Updates the visible tabs based on the selected platform checkboxes.
-     */
     function updateTabs() {
-        const previouslyActiveTabs = new Set(activeTabs);
+        const currentActiveTab = document.querySelector('.tab-button.active')?.dataset.tab;
         activeTabs.clear();
-
-        // Determine which tabs should be active
         platformCheckboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                activeTabs.add(checkbox.dataset.tab);
-            }
+            if (checkbox.checked) activeTabs.add(checkbox.dataset.tab);
         });
 
-        // Clear existing buttons
         tabButtonsContainer.innerHTML = '';
+        document.querySelector('.tabs-fieldset').style.display = activeTabs.size > 0 ? 'block' : 'none';
 
-        if (activeTabs.size === 0) {
-            // Hide the entire fieldset if no platforms are selected
-            document.querySelector('.tabs-fieldset').style.display = 'none';
-            return;
-        }
-
-        // Show the fieldset if there are active tabs
-        document.querySelector('.tabs-fieldset').style.display = 'block';
-
-        // Create buttons for active tabs
         activeTabs.forEach(tabId => {
-            const platformCheckbox = document.querySelector(`input[data-tab="${tabId}"]`);
-            const platformName = platformCheckbox.labels[0].textContent;
-
             const button = document.createElement('button');
-            button.type = 'button'; // Prevent form submission
+            button.type = 'button';
             button.className = 'tab-button';
-            button.textContent = platformName;
+            button.textContent = document.querySelector(`label[for="${tabId.replace('Tab', '')}"]`).textContent;
             button.dataset.tab = tabId;
             button.addEventListener('click', () => switchTab(tabId));
-
             tabButtonsContainer.appendChild(button);
         });
 
-        // Determine which tab to show
-        let tabToShow = [...activeTabs][0]; // Default to the first active tab
-        // Try to keep the previously active tab if it's still selected
-        const currentActiveButton = document.querySelector('.tab-button.active');
-        if (currentActiveButton && activeTabs.has(currentActiveButton.dataset.tab)) {
-            tabToShow = currentActiveButton.dataset.tab;
-        }
-
-        if (tabToShow) {
-            switchTab(tabToShow);
-        }
+        let tabToShow = currentActiveTab && activeTabs.has(currentActiveTab) ? currentActiveTab : [...activeTabs][0];
+        if (tabToShow) switchTab(tabToShow);
     }
 
-    /**
-     * Gathers data from all active tabs and constructs a single data object.
-     * @returns {object} The aggregated data from all forms.
-     */
+    // --- Form Data Aggregation ---
     function aggregateFormData() {
         const data = {
-            platforms: []
+            platforms: [...activeTabs].map(id => id.replace('Tab', '')),
+            common: {
+                alt_text: document.getElementById('alt_text').value
+            }
         };
-        activeTabs.forEach(tabId => {
-            const platformName = tabId.replace('Tab', '');
-            data.platforms.push(platformName);
-            data[platformName] = {};
+        data.platforms.forEach(platform => {
+            const tabId = `${platform}Tab`;
+            data[platform] = {};
             const formElements = document.getElementById(tabId).querySelectorAll('input, textarea');
             formElements.forEach(el => {
-                // Use the element's name attribute as the key
                 if (el.name) {
-                    if (el.type === 'radio') {
+                    if (el.type === 'checkbox') {
                         if (el.checked) {
-                            data[platformName][el.name] = el.value;
+                            if (!data[platform][el.name]) data[platform][el.name] = [];
+                            data[platform][el.name].push(el.value);
                         }
+                    } else if (el.type === 'radio') {
+                        if (el.checked) data[platform][el.name] = el.value;
                     } else {
-                        data[platformName][el.name] = el.value;
+                         if(el.name !== 'wp_content') data[platform][el.name] = el.value;
                     }
                 }
             });
+             if (platform === 'wordpress' && quillEditor) {
+                data.wordpress.wp_content = quillEditor.root.innerHTML;
+            }
         });
         return data;
     }
 
-    /**
-     * Handles the main form submission.
-     */
+    // --- Main Submit Handler ---
     async function handleFormSubmit(e) {
         e.preventDefault();
         setLoading(true);
 
         const file = mediaFileInput.files[0];
         if (!file) {
-            showStatus({ message: 'لطفاً یک فایل رسانه انتخاب کنید.', success: false });
+            displayPublicationResults({ success: false, message: 'لطفاً یک فایل رسانه انتخاب کنید.' });
             setLoading(false);
             return;
         }
 
         const textData = aggregateFormData();
         if (textData.platforms.length === 0) {
-            showStatus({ message: 'لطفاً حداقل یک پلتفرم را انتخاب کنید.', success: false });
+            displayPublicationResults({ success: false, message: 'لطفاً حداقل یک پلتفرم را انتخاب کنید.' });
             setLoading(false);
             return;
         }
 
         const formData = new FormData();
         formData.append('mediaFile', file);
-        // Append the structured text data as a JSON string
         formData.append('data', JSON.stringify(textData));
 
         try {
-            const response = await fetch('/publish', {
-                method: 'POST',
-                body: formData,
-            });
+            const response = await fetch('/publish', { method: 'POST', body: formData });
             const result = await response.json();
             displayPublicationResults(result);
             if (result.success) {
-                // Full reset on success
                 uploadForm.reset();
+                if(quillEditor) quillEditor.setText('');
                 platformCheckboxes.forEach(cb => cb.checked = false);
                 updateTabs();
             }
@@ -162,10 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Renders detailed results in the status area.
-     * @param {object} result - The server response object.
-     */
+    // --- UI Helpers ---
     function displayPublicationResults(result) {
         let html = `<h3>${result.message}</h3>`;
         if (result.details && result.details.length > 0) {
@@ -173,9 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             result.details.forEach(detail => {
                 const status = detail.success ? `<span class="status-icon-success">✔</span> موفق` : `<span class="status-icon-error">✖</span> ناموفق`;
                 html += `<li><strong>${detail.platform}:</strong> ${status}`;
-                if (!detail.success) {
-                    html += `<br><small class="error-message">${detail.message}</small>`;
-                }
+                if (!detail.success) html += `<br><small class="error-message">${detail.message}</small>`;
                 html += '</li>';
             });
             html += '</ul>';
@@ -198,7 +216,5 @@ document.addEventListener('DOMContentLoaded', () => {
         fileNameDisplay.textContent = mediaFileInput.files.length > 0 ? `فایل: ${mediaFileInput.files[0].name}` : '';
     });
     uploadForm.addEventListener('submit', handleFormSubmit);
-
-    // Initial call to set up the UI state
     updateTabs();
 });
