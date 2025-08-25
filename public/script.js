@@ -88,8 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
 
-            const result = await response.json();
-
             // Display detailed results from the server
             displayPublicationResults(result);
 
