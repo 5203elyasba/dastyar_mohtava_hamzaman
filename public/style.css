@@ -43,7 +43,15 @@ header {
 }
 
 header h1 { color: var(--primary-color); }
-header p { color: var(--dark-gray-color); }
+header p { color: var(--dark-gray-color); margin-top: 5px; }
+
+#live-datetime {
+    color: var(--dark-gray-color);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    direction: ltr; /* Keep LTR for standard date/time format */
+    text-align: center;
+}
 
 /* --- Form & Fieldset Styling --- */
 form { display: flex; flex-direction: column; gap: 25px; }

@@ -246,6 +246,18 @@ document.addEventListener('DOMContentLoaded', () => {
         textarea.focus();
     }
 
+    // --- Live Clock ---
+    function updateLiveDateTime() {
+        const dateTimeContainer = document.getElementById('live-datetime');
+        if (!dateTimeContainer) return;
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const dateString = now.toLocaleDateString('fa-IR', dateOptions);
+        const timeString = now.toLocaleTimeString('en-US', timeOptions); // Use en-US for consistent LTR numbers
+        dateTimeContainer.textContent = `${dateString} - ${timeString}`;
+    }
+
     // --- Initial Setup ---
     const enableSchedulingCheckbox = document.getElementById('enableScheduling');
     const scheduleTimeContainer = document.getElementById('scheduleTimeContainer');
@@ -266,5 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
         scheduleTimeContainer.style.display = enableSchedulingCheckbox.checked ? 'block' : 'none';
     });
 
+    // Initial call to set up UI state
     updateTabs();
+    // Initial call and start interval for the live clock
+    updateLiveDateTime();
+    setInterval(updateLiveDateTime, 1000);
 });
