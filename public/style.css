@@ -20,165 +20,179 @@ body {
     padding: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Align to top */
     min-height: 100vh;
     direction: rtl;
 }
 
-/* --- Main Container & Header --- */
 .container {
-    max-width: 600px;
+    max-width: 750px;
     width: 100%;
     background-color: var(--form-background);
     padding: 30px 40px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     border-bottom: 1px solid #eee;
     padding-bottom: 20px;
 }
 
 header h1 {
-    margin: 0;
     color: var(--primary-color);
-    font-weight: 700;
 }
 
-header p {
-    margin-top: 5px;
-    color: var(--dark-gray-color);
-}
-
-/* --- Form Styling --- */
-#uploadForm {
+/* --- Form & Fieldset Styling --- */
+form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px;
+}
+
+fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 0;
+}
+
+legend {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    padding: 0 10px;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.form-group:last-child {
+    margin-bottom: 0;
 }
 
-label, legend {
+label {
     font-weight: 500;
-    margin-bottom: 8px;
-    color: #495057;
 }
 
-textarea, input[type="file"], input[type="text"] {
+input[type="text"],
+textarea,
+input[type="file"] {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-family: 'Vazirmatn', sans-serif;
     font-size: 1rem;
+    box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
-    box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
-textarea:focus, input[type="file"]:focus, input[type="text"]:focus {
+input[type="text"]:focus,
+textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
 }
 
-.file-name-display {
-    margin-top: 8px;
-    font-size: 0.9rem;
-    color: var(--dark-gray-color);
-}
-
-.field-hint {
-    font-size: 0.8rem;
-    color: var(--dark-gray-color);
-    margin-top: 4px;
-}
-
-/* --- Checkbox Styling --- */
-fieldset {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 15px;
+.platform-selector {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
 }
 
 .checkbox-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 input[type="checkbox"] {
-    width: 1.2em;
-    height: 1.2em;
+    width: 1.3em;
+    height: 1.3em;
     accent-color: var(--primary-color);
 }
 
-/* --- WordPress Options Styling --- */
-.wordpress-options-container {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: -10px; /* Pull it closer to the checkbox */
-    margin-bottom: 10px;
+/* --- Tab Interface Styling --- */
+.tab-buttons {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 20px;
 }
 
+.tab-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--dark-gray-color);
+    border-bottom: 3px solid transparent;
+    transition: color 0.3s, border-bottom-color 0.3s;
+}
+
+.tab-button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-button:hover {
+    color: var(--primary-color);
+}
+
+.tab-content {
+    display: none; /* Hidden by default */
+}
+
+.tab-content.active {
+    display: block; /* Shown when active */
+}
+
+/* --- Radio Group --- */
 .radio-group {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+    padding: 5px 0;
 }
-
 .radio-group label {
     font-weight: 400;
-    margin-bottom: 0;
 }
 
-.radio-group input[type="radio"] {
-    width: 1.1em;
-    height: 1.1em;
-    accent-color: var(--primary-color);
-}
-
-
-/* --- Button Styling --- */
+/* --- Submit Button --- */
 #submitBtn {
     background-color: var(--primary-color);
     color: white;
-    padding: 12px 20px;
+    padding: 14px 20px;
     border: none;
     border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-size: 1.2rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.1s;
+    transition: background-color 0.3s;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
-    height: 48px; /* Fixed height */
 }
-
 #submitBtn:hover {
     background-color: var(--primary-hover-color);
 }
-
-#submitBtn:active {
-    transform: scale(0.98);
-}
-
 #submitBtn:disabled {
     background-color: var(--dark-gray-color);
     cursor: not-allowed;
 }
 
-/* --- Spinner Animation --- */
+/* --- Status Area & Spinner --- */
 .spinner {
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
@@ -187,71 +201,21 @@ input[type="checkbox"] {
     height: 20px;
     animation: spin 1s ease-in-out infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* --- Status Area Styling --- */
 .status-area {
     margin-top: 20px;
     padding: 15px;
     border-radius: 8px;
     text-align: center;
-    font-weight: 500;
-    display: none; /* Hidden by default */
+    display: none;
 }
-
-.status-area.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    display: block;
-}
-
-.status-area.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-    display: block;
-}
-
-/* --- Detailed Status Report Styling --- */
-.status-area h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
-}
-
-.status-area ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    text-align: right;
-}
-
-.status-area li {
-    padding: 10px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.status-area li:last-child {
-    border-bottom: none;
-}
-
-.status-area .status-icon-success {
-    color: var(--success-color);
-    font-weight: bold;
-}
-
-.status-area .status-icon-error {
-    color: var(--error-color);
-    font-weight: bold;
-}
-
-.status-area .error-message {
-    font-size: 0.85rem;
-    color: #721c24;
-    display: block;
-    margin-top: 5px;
-}
+.status-area.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+.status-area.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+.status-area h3 { margin-top: 0; }
+.status-area ul { list-style: none; padding: 0; text-align: right; }
+.status-area li { padding: 8px; border-bottom: 1px solid #e0e0e0; }
+.status-area li:last-child { border-bottom: none; }
+.status-area .status-icon-success { color: var(--success-color); }
+.status-area .status-icon-error { color: var(--error-color); }
+.status-area .error-message { font-size: 0.85rem; color: #721c24; }

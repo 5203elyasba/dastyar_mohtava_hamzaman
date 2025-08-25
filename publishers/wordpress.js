@@ -47,16 +47,13 @@ async function uploadMedia(file, title) {
 }
 
 /**
- * Publishes content to WordPress as either a blog post or a WooCommerce product.
- * @param {object} data - The data object containing all necessary information.
- * @param {string} data.title - The title of the post/product.
- * @param {string} data.caption - The content/description.
- * @param {object} data.file - The file object from Multer.
- * @param {string} data.wpPostType - The type of post ('post' or 'product').
- * @param {string} data.wpStatus - The status for the post ('draft' or 'publish').
+ * Publishes content to WordPress using data from its specific tab.
+ * @param {object} wpData - The data object from the WordPress tab.
+ * @param {object} file - The uploaded file object from Multer.
  * @returns {Promise<object>} A promise that resolves with the result from the WordPress API.
  */
-async function publishToWordPress({ title, caption, file, wpPostType, wpStatus }) {
+async function publishToWordPress(wpData, file) {
+    const { wp_title, wp_content, wp_excerpt, wp_tags, wpPostType, wpStatus } = wpData;
     console.log(`Preparing to publish to WordPress as a '${wpPostType}'...`);
 
     if (!WORDPRESS_URL) {
@@ -64,7 +61,7 @@ async function publishToWordPress({ title, caption, file, wpPostType, wpStatus }
     }
 
     // Step 1: Upload the media file and get its ID.
-    const mediaId = await uploadMedia(file, title);
+    const mediaId = await uploadMedia(file, wp_title);
 
     // Step 2: Create the post or product and associate the media with it.
     let postEndpoint;
@@ -73,22 +70,25 @@ async function publishToWordPress({ title, caption, file, wpPostType, wpStatus }
     if (wpPostType === 'post') {
         postEndpoint = `${WORDPRESS_URL}/wp-json/wp/v2/posts`;
         postData = {
-            title: title,
-            content: caption,
+            title: wp_title,
+            content: wp_content,
+            excerpt: wp_excerpt,
             status: wpStatus, // 'draft' or 'publish'
-            featured_media: mediaId, // Associate the uploaded media
+            featured_media: mediaId,
+            // FUTURE-PROOFING: Handling tags requires finding/creating tag IDs.
+            // This is a multi-step process and is omitted for now.
+            // A future implementation would look like:
+            // const tagIds = await getTagIds(wp_tags);
+            // tags: tagIds,
         };
     } else if (wpPostType === 'product') {
-        // WooCommerce API endpoint
         postEndpoint = `${WORDPRESS_URL}/wp-json/wc/v3/products`;
         postData = {
-            name: title,
-            description: caption,
-            status: 'draft', // WooCommerce products are created as draft by default for safety.
-            images: [
-                { id: mediaId } // Associate the uploaded media
-            ],
-            // NOTE: More fields like 'regular_price', 'sku', etc., can be added here in the future.
+            name: wp_title,
+            description: wp_content,
+            short_description: wp_excerpt,
+            status: 'draft', // Products are always created as draft for safety.
+            images: [{ id: mediaId }],
         };
     } else {
         throw new Error(`Unsupported WordPress post type: ${wpPostType}`);

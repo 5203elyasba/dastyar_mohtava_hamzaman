@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دستیار محتوای تحریرچی</title>
+    <title>دستیار محتوای تحریرچی (نسخه جدید)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,80 +14,91 @@
     <div class="container">
         <header>
             <h1>دستیار محتوای تحریرچی</h1>
-            <p>محتوای خود را به صورت همزمان در پلتفرم‌های مختلف منتشر کنید.</p>
+            <p>محتوای خود را به صورت بهینه برای هر پلتفرم مدیریت و منتشر کنید.</p>
         </header>
 
-        <form id="uploadForm" enctype="multipart/form-data">
-
-            <div class="form-group">
-                <label for="title">عنوان</label>
-                <input type="text" id="title" name="title" placeholder="عنوان پست یا محصول..." required>
-                <small class="field-hint">این عنوان برای پست وبلاگ یا محصول وردپرس استفاده می‌شود.</small>
-            </div>
-
-            <div class="form-group">
-                <label for="caption">کپشن یا متن اصلی</label>
-                <textarea id="caption" name="caption" rows="8" placeholder="متن اصلی پست یا توضیحات محصول را اینجا وارد کنید..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="mediaFile">فایل رسانه (عکس یا ویدیو)</label>
-                <input type="file" id="mediaFile" name="mediaFile" accept="image/jpeg, image/png, video/mp4" required>
-                <small id="fileNameDisplay" class="file-name-display"></small>
-                <small class="field-hint">حداکثر حجم مجاز: 25 مگابایت</small>
-            </div>
-
-            <fieldset class="form-group">
-                <legend>انتخاب پلتفرم‌ها</legend>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="telegram" name="platforms" value="telegram" checked>
-                    <label for="telegram">تلگرام</label>
+        <form id="uploadForm">
+            <!-- Step 1: Common Fields -->
+            <fieldset class="form-group common-fieldset">
+                <legend>۱. اطلاعات مشترک</legend>
+                <div class="form-group">
+                    <label for="mediaFile">فایل رسانه (عکس یا ویدیو)</label>
+                    <input type="file" id="mediaFile" name="mediaFile" accept="image/jpeg, image/png, video/mp4" required>
+                    <small id="fileNameDisplay" class="file-name-display"></small>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="wordpress" name="platforms" value="wordpress">
-                    <label for="wordpress">وردپرس</label>
+                <div class="form-group">
+                    <label>پلتفرم‌های مقصد را انتخاب کنید:</label>
+                    <div class="platform-selector">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="telegram" name="platforms" value="telegram" data-tab="telegramTab">
+                            <label for="telegram">تلگرام</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="wordpress" name="platforms" value="wordpress" data-tab="wordpressTab">
+                            <label for="wordpress">وردپرس</label>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
 
-            <!-- WordPress Specific Options -->
-            <div id="wordpressOptions" class="wordpress-options-container" style="display: none;">
-                <fieldset class="form-group">
-                    <legend>تنظیمات وردپرس</legend>
-
-                    <div class="form-group">
-                        <label>نوع محتوا:</label>
-                        <div class="radio-group">
-                            <input type="radio" id="wpPostTypePost" name="wpPostType" value="post" checked>
-                            <label for="wpPostTypePost">نوشته وبلاگ</label>
-                            <input type="radio" id="wpPostTypeProduct" name="wpPostType" value="product">
-                            <label for="wpPostTypeProduct">محصول ووکامرس</label>
+            <!-- Step 2: Platform-Specific Tabs -->
+            <fieldset class="form-group tabs-fieldset">
+                <legend>۲. محتوای هر پلتفرم</legend>
+                <div class="tab-buttons">
+                    <!-- Tab buttons will be dynamically inserted here by JS -->
+                </div>
+                <div class="tab-content-container">
+                    <!-- Telegram Tab Content -->
+                    <div id="telegramTab" class="tab-content">
+                        <div class="form-group">
+                            <label for="telegram_caption">کپشن تلگرام</label>
+                            <textarea id="telegram_caption" name="telegram_caption" rows="5" placeholder="کپشن مناسب برای تلگرام..."></textarea>
                         </div>
                     </div>
-
-                    <div class="form-group" id="wpStatusContainer">
-                        <label>وضعیت انتشار:</label>
-                        <div class="radio-group">
-                            <input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked>
-                            <label for="wpStatusDraft">ذخیره پیش‌نویس</label>
-                            <input type="radio" id="wpStatusPublish" name="wpStatus" value="publish">
-                            <label for="wpStatusPublish">انتشار فوری</label>
+                    <!-- WordPress Tab Content -->
+                    <div id="wordpressTab" class="tab-content">
+                        <div class="form-group">
+                            <label for="wp_title">عنوان نوشته/محصول</label>
+                            <input type="text" id="wp_title" name="wp_title" placeholder="عنوان اصلی برای سئو...">
+                        </div>
+                        <div class="form-group">
+                            <label for="wp_content">محتوای اصلی (مقاله)</label>
+                            <textarea id="wp_content" name="wp_content" rows="12" placeholder="متن کامل مقاله یا توضیحات محصول..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="wp_excerpt">چکیده / توضیحات متا (برای سئو)</label>
+                            <textarea id="wp_excerpt" name="wp_excerpt" rows="3" placeholder="یک توضیح کوتاه و جذاب برای نمایش در گوگل..."></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="wp_tags">برچسب‌ها (با کاما جدا کنید)</label>
+                            <input type="text" id="wp_tags" name="wp_tags" placeholder="مثال: آموزش, بازاریابی, ...">
+                        </div>
+                        <div class="form-group">
+                            <label>نوع و وضعیت:</label>
+                             <div class="radio-group">
+                                <input type="radio" id="wpPostTypePost" name="wpPostType" value="post" checked>
+                                <label for="wpPostTypePost">نوشته وبلاگ</label>
+                                <input type="radio" id="wpPostTypeProduct" name="wpPostType" value="product">
+                                <label for="wpPostTypeProduct">محصول ووکامرس</label>
+                            </div>
+                            <div class="radio-group" id="wpStatusContainer">
+                                <input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked>
+                                <label for="wpStatusDraft">پیش‌نویس</label>
+                                <input type="radio" id="wpStatusPublish" name="wpStatus" value="publish">
+                                <label for="wpStatusPublish">انتشار فوری</label>
+                            </div>
                         </div>
                     </div>
-
-                </fieldset>
-            </div>
+                </div>
+            </fieldset>
 
             <button type="submit" id="submitBtn">
                 <span class="btn-text">انتشار محتوا</span>
                 <span class="spinner" style="display: none;"></span>
             </button>
-
         </form>
 
-        <div id="statusArea" class="status-area">
-            <!-- Feedback messages will be displayed here -->
-        </div>
-
+        <div id="statusArea" class="status-area"></div>
     </div>
 
     <script src="script.js"></script>

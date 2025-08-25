@@ -2,155 +2,179 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element References ---
     const uploadForm = document.getElementById('uploadForm');
     const submitBtn = document.getElementById('submitBtn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const spinner = submitBtn.querySelector('.spinner');
     const statusArea = document.getElementById('statusArea');
     const mediaFileInput = document.getElementById('mediaFile');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const platformCheckboxes = document.querySelectorAll('input[name="platforms"]');
+    const tabButtonsContainer = document.querySelector('.tab-buttons');
+    const tabContentContainer = document.querySelector('.tab-content-container');
 
-    // WordPress specific elements
-    const wordpressCheckbox = document.getElementById('wordpress');
-    const wordpressOptionsContainer = document.getElementById('wordpressOptions');
-    const wpPostTypeRadios = document.querySelectorAll('input[name="wpPostType"]');
-    const wpStatusContainer = document.getElementById('wpStatusContainer');
+    // --- State Management ---
+    let activeTabs = new Set();
 
-
-    const MAX_FILE_SIZE_MB = 25;
-    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
-    // --- Event Listeners ---
-
-    // Listen for form submission
-    uploadForm.addEventListener('submit', handleFormSubmit);
-
-    // Listen for file selection to display its name
-    mediaFileInput.addEventListener('change', () => {
-        if (mediaFileInput.files.length > 0) {
-            const fileName = mediaFileInput.files[0].name;
-            fileNameDisplay.textContent = `فایل انتخاب شده: ${fileName}`;
-        } else {
-            fileNameDisplay.textContent = '';
-        }
-    });
-
-    // Toggle WordPress options visibility
-    wordpressCheckbox.addEventListener('change', () => {
-        wordpressOptionsContainer.style.display = wordpressCheckbox.checked ? 'block' : 'none';
-    });
-
-    // Toggle WordPress post status visibility based on post type
-    wpPostTypeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.value === 'post') {
-                wpStatusContainer.style.display = 'block';
-            } else {
-                wpStatusContainer.style.display = 'none';
-            }
-        });
-    });
-
-
-    // --- Main Handler Function ---
+    // --- Functions ---
 
     /**
-     * Handles the form submission process.
-     * @param {Event} e - The form submission event.
+     * Switches the view to the specified tab.
+     * @param {string} tabId - The ID of the tab content to show.
+     */
+    function switchTab(tabId) {
+        // Deactivate all tab buttons and content
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        // Activate the selected tab and its content
+        const tabButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+        const tabContent = document.getElementById(tabId);
+        if (tabButton && tabContent) {
+            tabButton.classList.add('active');
+            tabContent.classList.add('active');
+        }
+    }
+
+    /**
+     * Updates the visible tabs based on the selected platform checkboxes.
+     */
+    function updateTabs() {
+        const previouslyActiveTabs = new Set(activeTabs);
+        activeTabs.clear();
+
+        // Determine which tabs should be active
+        platformCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                activeTabs.add(checkbox.dataset.tab);
+            }
+        });
+
+        // Clear existing buttons
+        tabButtonsContainer.innerHTML = '';
+
+        // Hide all content panes
+        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+
+        if (activeTabs.size === 0) {
+            // Hide the container if no tabs are selected
+            document.querySelector('.tabs-fieldset').style.display = 'none';
+            return;
+        }
+
+        document.querySelector('.tabs-fieldset').style.display = 'block';
+
+        // Create buttons for active tabs
+        activeTabs.forEach(tabId => {
+            const platformCheckbox = document.querySelector(`input[data-tab="${tabId}"]`);
+            const platformName = platformCheckbox.labels[0].textContent;
+
+            const button = document.createElement('button');
+            button.type = 'button'; // Prevent form submission
+            button.className = 'tab-button';
+            button.textContent = platformName;
+            button.dataset.tab = tabId;
+            button.addEventListener('click', () => switchTab(tabId));
+
+            tabButtonsContainer.appendChild(button);
+            document.getElementById(tabId).style.display = 'block';
+        });
+
+        // Determine which tab to show
+        let tabToShow = [...activeTabs][0]; // Default to the first active tab
+        // Try to keep the previously active tab if it's still selected
+        const currentActiveButton = document.querySelector('.tab-button.active');
+        if (currentActiveButton && activeTabs.has(currentActiveButton.dataset.tab)) {
+            tabToShow = currentActiveButton.dataset.tab;
+        }
+
+        if (tabToShow) {
+            switchTab(tabToShow);
+        }
+    }
+
+    /**
+     * Gathers data from all active tabs and constructs a single data object.
+     * @returns {object} The aggregated data from all forms.
+     */
+    function aggregateFormData() {
+        const data = {
+            platforms: []
+        };
+        activeTabs.forEach(tabId => {
+            const platformName = tabId.replace('Tab', '');
+            data.platforms.push(platformName);
+            data[platformName] = {};
+            const formElements = document.getElementById(tabId).querySelectorAll('input, textarea');
+            formElements.forEach(el => {
+                // Use the element's name attribute as the key
+                if (el.name) {
+                    if (el.type === 'radio') {
+                        if (el.checked) {
+                            data[platformName][el.name] = el.value;
+                        }
+                    } else {
+                        data[platformName][el.name] = el.value;
+                    }
+                }
+            });
+        });
+        return data;
+    }
+
+    /**
+     * Handles the main form submission.
      */
     async function handleFormSubmit(e) {
-        e.preventDefault(); // Prevent the default browser form submission
+        e.preventDefault();
+        setLoading(true);
 
-        // --- Client-Side Validation ---
         const file = mediaFileInput.files[0];
         if (!file) {
-            showStatus('لطفاً یک فایل رسانه انتخاب کنید.', 'error');
+            showStatus({ message: 'لطفاً یک فایل رسانه انتخاب کنید.', success: false });
+            setLoading(false);
             return;
         }
 
-        if (file.size > MAX_FILE_SIZE_BYTES) {
-            showStatus(`حجم فایل نباید بیشتر از ${MAX_FILE_SIZE_MB} مگابایت باشد.`, 'error');
+        const textData = aggregateFormData();
+        if (textData.platforms.length === 0) {
+            showStatus({ message: 'لطفاً حداقل یک پلتفرم را انتخاب کنید.', success: false });
+            setLoading(false);
             return;
         }
 
-        // --- UI State: Start Loading ---
-        setLoading(true);
-        clearStatus();
-
-        // --- Prepare and Send Data ---
-        const formData = new FormData(uploadForm);
+        const formData = new FormData();
+        formData.append('mediaFile', file);
+        // Append the structured text data as a JSON string
+        formData.append('data', JSON.stringify(textData));
 
         try {
             const response = await fetch('/publish', {
                 method: 'POST',
                 body: formData,
-                // Note: 'Content-Type' header is not needed.
-                // The browser automatically sets it to 'multipart/form-data' with the correct boundary.
             });
-
             const result = await response.json();
-
-            // Display detailed results from the server
             displayPublicationResults(result);
-
-            // If the overall operation was a success, reset the form.
             if (result.success) {
+                // Full reset on success
                 uploadForm.reset();
-                fileNameDisplay.textContent = '';
-                wordpressOptionsContainer.style.display = 'none';
+                platformCheckboxes.forEach(cb => cb.checked = false);
+                updateTabs();
             }
-
         } catch (error) {
-            // --- UI State: Error ---
-            // This catches network errors or issues with parsing the response.
             console.error('Submission Error:', error);
-            showStatus(`<p><strong>خطای ارتباط با سرور:</strong> ${error.message}</p>`, 'error');
+            displayPublicationResults({ success: false, message: 'خطای ارتباط با سرور', details: [{ platform: 'Application', success: false, message: error.message }] });
         } finally {
-            // --- UI State: End Loading ---
             setLoading(false);
         }
     }
 
-
-    // --- Helper Functions ---
-
     /**
-     * Toggles the loading state of the submit button.
-     * @param {boolean} isLoading - Whether to show the loading state.
-     */
-    function setLoading(isLoading) {
-        if (isLoading) {
-            submitBtn.disabled = true;
-            btnText.style.display = 'none';
-            spinner.style.display = 'inline-block';
-        } else {
-            submitBtn.disabled = false;
-            btnText.style.display = 'inline-block';
-            spinner.style.display = 'none';
-        }
-    }
-
-    /**
-     * Displays a status message to the user, accepting HTML content.
-     * @param {string} htmlContent - The HTML content to display.
-     * @param {'success' | 'error'} type - The type of message.
-     */
-    function showStatus(htmlContent, type) {
-        statusArea.innerHTML = htmlContent;
-        statusArea.className = `status-area ${type}`; // Applies .success or .error class
-    }
-
-    /**
-     * Renders the detailed results from the server's response.
-     * @param {object} result - The JSON response from the server.
+     * Renders detailed results in the status area.
+     * @param {object} result - The server response object.
      */
     function displayPublicationResults(result) {
         let html = `<h3>${result.message}</h3>`;
         if (result.details && result.details.length > 0) {
             html += '<ul>';
             result.details.forEach(detail => {
-                const status = detail.success
-                    ? `<span class="status-icon-success">✔</span> موفق`
-                    : `<span class="status-icon-error">✖</span> ناموفق`;
-
+                const status = detail.success ? `<span class="status-icon-success">✔</span> موفق` : `<span class="status-icon-error">✖</span> ناموفق`;
                 html += `<li><strong>${detail.platform}:</strong> ${status}`;
                 if (!detail.success) {
                     html += `<br><small class="error-message">${detail.message}</small>`;
@@ -159,15 +183,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             html += '</ul>';
         }
-        showStatus(html, result.success ? 'success' : 'error');
+        statusArea.innerHTML = html;
+        statusArea.className = `status-area ${result.success ? 'success' : 'error'}`;
     }
 
-    /**
-     * Clears the status message area.
-     */
-    function clearStatus() {
-        statusArea.textContent = '';
-        statusArea.className = 'status-area';
+    function setLoading(isLoading) {
+        const btnText = submitBtn.querySelector('.btn-text');
+        const spinner = submitBtn.querySelector('.spinner');
+        submitBtn.disabled = isLoading;
+        btnText.style.display = isLoading ? 'none' : 'inline-block';
+        spinner.style.display = isLoading ? 'inline-block' : 'none';
     }
 
+    // --- Initial Setup ---
+    platformCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateTabs));
+    mediaFileInput.addEventListener('change', () => {
+        fileNameDisplay.textContent = mediaFileInput.files.length > 0 ? `فایل: ${mediaFileInput.files[0].name}` : '';
+    });
+    uploadForm.addEventListener('submit', handleFormSubmit);
+
+    // Initial call to set up the UI state
+    updateTabs();
 });
