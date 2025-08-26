@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دستیار محتوای تحریرچی (نسخه پیشرفته)</title>
+    <title>Tahrirchi Content Assistant</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,102 +15,76 @@
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <div class="header-toolbar">
-                <button type="button" id="viewScheduledBtn" class="header-button">مشاهده پست‌های زمان‌بندی شده</button>
+    <div class="dashboard-layout">
+        <!-- Sidebar for Controls -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>کنترل پنل</h2>
             </div>
-            <h1>دستیار محتوای تحریرچی</h1>
-            <p>محتوای خود را به صورت حرفه‌ای و بهینه برای هر پلتفرم مدیریت و منتشر کنید.</p>
-        </header>
-
-        <form id="uploadForm">
-            <!-- Step 1: Common Fields -->
-            <fieldset class="form-group common-fieldset">
-                <legend>۱. اطلاعات مشترک</legend>
-                <div class="form-group">
-                    <label for="mediaFile">فایل رسانه (عکس یا ویدیو)</label>
-                    <input type="file" id="mediaFile" name="mediaFile" accept="image/jpeg, image/png, video/mp4" required>
-                    <small id="fileNameDisplay" class="file-name-display"></small>
-                </div>
-                <div class="form-group">
-                    <label for="alt_text">متن جایگزین تصویر (Alt Text)</label>
-                    <input type="text" id="alt_text" name="alt_text" placeholder="یک توصیف کوتاه از تصویر برای سئو...">
-                </div>
-                <div class="form-group">
-                    <label>پلتفرم‌های مقصد:</label>
+            <form id="controlForm">
+                <fieldset class="sidebar-fieldset">
+                    <legend>پلتفرم‌ها</legend>
                     <div class="platform-selector">
                         <div class="checkbox-group"><input type="checkbox" id="telegram" name="platforms" value="telegram" data-tab="telegramTab"><label for="telegram">تلگرام</label></div>
                         <div class="checkbox-group"><input type="checkbox" id="wordpress" name="platforms" value="wordpress" data-tab="wordpressTab"><label for="wordpress">وردپرس</label></div>
                         <div class="checkbox-group"><input type="checkbox" id="instagram" name="platforms" value="instagram" data-tab="instagramTab"><label for="instagram">اینستاگرام</label></div>
                     </div>
-                </div>
-            </fieldset>
+                </fieldset>
 
-            <!-- Step 2: Platform-Specific Tabs -->
-            <fieldset class="form-group tabs-fieldset">
-                <legend>۲. محتوای هر پلتفرم</legend>
-                <div class="tab-buttons"></div>
-                <div class="tab-content-container">
-                    <div id="telegramTab" class="tab-content">
-                        <div class="form-group">
-                            <label for="telegram_caption">کپشن تلگرام</label>
-                            <div class="markdown-toolbar"><button type="button" class="toolbar-button" data-format="bold"><b>B</b></button><button type="button" class="toolbar-button" data-format="italic"><i>I</i></button></div>
-                            <textarea id="telegram_caption" name="telegram_caption" rows="5" placeholder="کپشن مناسب برای تلگرام..."></textarea>
-                        </div>
+                <fieldset class="sidebar-fieldset">
+                    <legend>زمان‌بندی</legend>
+                    <div class="checkbox-group"><input type="checkbox" id="enableScheduling"><label for="enableScheduling">ارسال زمان‌بندی شده</label></div>
+                    <div class="form-group" id="scheduleTimeContainer" style="display: none; margin-top: 10px;">
+                        <input type="text" id="scheduleTime" name="scheduleTime" class="jalali-datepicker" placeholder="انتخاب تاریخ و زمان..." readonly>
                     </div>
-                    <div id="wordpressTab" class="tab-content">
-                        <div class="form-group"><label for="wp_title">عنوان نوشته</label><input type="text" id="wp_title" name="wp_title" placeholder="عنوان اصلی برای سئو..."></div>
-                        <div class="form-group"><label for="wp_content_editor">محتوای اصلی</label><div id="wp_content_editor" class="quill-editor"></div><input type="hidden" id="wp_content" name="wp_content"></div>
-                        <div class="form-group"><label for="wp_excerpt">چکیده (برای سئو)</label><textarea id="wp_excerpt" name="wp_excerpt" rows="3" placeholder="یک توضیح کوتاه و جذاب برای نمایش در گوگل..."></textarea></div>
-                        <div class="form-group"><label>دسته‌بندی‌ها</label><div id="wpCategoriesContainer" class="categories-container"><p class="loading-text">در حال بارگذاری...</p></div></div>
-                        <div class="form-group"><label>وضعیت انتشار</label><div class="radio-group" id="wpStatusContainer"><input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked><label for="wpStatusDraft">پیش‌نویس</label><input type="radio" id="wpStatusPublish" name="wpStatus" value="publish"><label for="wpStatusPublish">انتشار فوری</label></div></div>
+                </fieldset>
+
+                <fieldset class="sidebar-fieldset">
+                    <legend>عملیات</legend>
+                    <button type="button" id="viewScheduledBtn" class="sidebar-button">پست‌های زمان‌بندی شده</button>
+                    <button type="submit" id="submitBtn" class="submit-button">
+                        <span class="btn-text">ارسال</span>
+                        <span class="spinner" style="display: none;"></span>
+                    </button>
+                </fieldset>
+            </form>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+             <header class="main-header">
+                <h1>دستیار محتوای تحریرچی</h1>
+                <p>محتوای خود را در اینجا ایجاد و برای پلتفرم‌های انتخابی بهینه کنید.</p>
+            </header>
+            <form id="contentForm">
+                <fieldset class="form-group">
+                    <legend>محتوای مشترک</legend>
+                    <div class="form-group">
+                        <label for="mediaFile">فایل رسانه (عکس یا ویدیو)</label>
+                        <input type="file" id="mediaFile" name="mediaFile" required>
+                        <small id="fileNameDisplay" class="file-name-display"></small>
                     </div>
-                    <!-- Instagram Tab Content -->
-                    <div id="instagramTab" class="tab-content">
-                        <div class="form-group">
-                            <label for="instagram_caption">کپشن اینستاگرام</label>
-                            <textarea id="instagram_caption" name="instagram_caption" rows="8" placeholder="کپشن اینستاگرام (حداکثر ۲۲۰۰ کاراکتر و ۳۰ هشتگ)..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>نوع انتشار</label>
-                            <div class="radio-group">
-                                <input type="radio" id="igPostTypeFeed" name="instagram_post_type" value="feed" checked>
-                                <label for="igPostTypeFeed">پست فید</label>
-                                <input type="radio" id="igPostTypeStory" name="instagram_post_type" value="story">
-                                <label for="igPostTypeStory">استوری</label>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label for="alt_text">متن جایگزین تصویر (Alt Text)</label>
+                        <input type="text" id="alt_text" name="alt_text" placeholder="یک توصیف کوتاه از تصویر برای سئو...">
                     </div>
-                </div>
-            </fieldset>
+                </fieldset>
 
-            <!-- Step 3: Scheduling Options -->
-            <fieldset class="form-group">
-                <legend>۳. زمان‌بندی</legend>
-                <div class="checkbox-group"><input type="checkbox" id="enableScheduling"><label for="enableScheduling">ارسال زمان‌بندی شده</label></div>
-                <div class="form-group" id="scheduleTimeContainer" style="display: none; margin-top: 15px;">
-                    <label for="scheduleTime">تاریخ و زمان انتشار:</label>
-                    <input type="text" id="scheduleTime" name="scheduleTime" class="jalali-datepicker" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
-                </div>
-            </fieldset>
-
-            <button type="submit" id="submitBtn"><span class="btn-text">ارسال</span><span class="spinner" style="display: none;"></span></button>
-        </form>
-
-        <div id="statusArea" class="status-area"></div>
+                <fieldset class="form-group tabs-fieldset">
+                    <legend>محتوای اختصاصی هر پلتفرم</legend>
+                    <div class="tab-buttons"></div>
+                    <div class="tab-content-container">
+                        <div id="telegramTab" class="tab-content"><div class="form-group"><label for="telegram_caption">کپشن تلگرام</label><div class="markdown-toolbar"><button type="button" class="toolbar-button" data-format="bold"><b>B</b></button><button type="button" class="toolbar-button" data-format="italic"><i>I</i></button></div><textarea id="telegram_caption" name="telegram_caption" rows="5"></textarea></div></div>
+                        <div id="wordpressTab" class="tab-content"><div class="form-group"><label for="wp_title">عنوان نوشته</label><input type="text" id="wp_title" name="wp_title"></div><div class="form-group"><label for="wp_content_editor">محتوای اصلی</label><div id="wp_content_editor" class="quill-editor"></div><input type="hidden" id="wp_content" name="wp_content"></div><div class="form-group"><label for="wp_excerpt">چکیده (سئو)</label><textarea id="wp_excerpt" name="wp_excerpt" rows="3"></textarea></div><div class="form-group"><label>دسته‌بندی‌ها</label><div id="wpCategoriesContainer" class="categories-container"><p class="loading-text">در حال بارگذاری...</p></div></div><div class="form-group"><label>وضعیت انتشار</label><div class="radio-group"><input type="radio" id="wpStatusDraft" name="wpStatus" value="draft" checked><label for="wpStatusDraft">پیش‌نویس</label><input type="radio" id="wpStatusPublish" name="wpStatus" value="publish"><label for="wpStatusPublish">انتشار</label></div></div></div>
+                        <div id="instagramTab" class="tab-content"><div class="form-group"><label for="instagram_caption">کپشن اینستاگرام</label><textarea id="instagram_caption" name="instagram_caption" rows="8"></textarea></div><div class="form-group"><label>نوع انتشار</label><div class="radio-group"><input type="radio" id="igPostTypeFeed" name="instagram_post_type" value="feed" checked><label for="igPostTypeFeed">پست فید</label><input type="radio" id="igPostTypeStory" name="instagram_post_type" value="story"><label for="igPostTypeStory">استوری</label></div></div></div>
+                    </div>
+                </fieldset>
+            </form>
+        </main>
     </div>
 
     <!-- Dashboard Modal -->
-    <div id="dashboardModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>پست‌های زمان‌بندی شده</h2>
-            <div id="dashboardContent" class="dashboard-content">
-                <!-- Scheduled jobs will be rendered here -->
-            </div>
-        </div>
-    </div>
+    <div id="dashboardModal" class="modal"><div class="modal-content"><span class="close-button">&times;</span><h2>پست‌های زمان‌بندی شده</h2><div id="dashboardContent" class="dashboard-content"></div></div></div>
 
     <!-- 3rd Party Libraries -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
