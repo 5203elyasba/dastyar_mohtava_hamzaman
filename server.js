@@ -152,6 +152,51 @@ app.get('/api/wordpress/categories', async (req, res) => {
 });
 
 /**
+ * @route GET /api/jobs
+ * @description Fetches the list of all scheduled jobs.
+ */
+app.get('/api/jobs', async (req, res) => {
+    try {
+        const jobs = await readJobs();
+        res.json(jobs);
+    } catch (error) {
+        console.error("Error reading jobs file:", error);
+        res.status(500).json({ message: "Failed to retrieve scheduled jobs." });
+    }
+});
+
+/**
+ * @route DELETE /api/jobs/:id
+ * @description Deletes a specific scheduled job.
+ */
+app.delete('/api/jobs/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const jobs = await readJobs();
+        const jobToDelete = jobs.find(job => job.id === id);
+
+        if (!jobToDelete) {
+            return res.status(404).json({ message: "Job not found." });
+        }
+
+        // Delete the associated media file
+        await fs.unlink(jobToDelete.mediaFilePath).catch(err => {
+            // Log the error but don't block the process if file is already gone
+            console.error(`Could not delete media file for job ${id}:`, err.message);
+        });
+
+        // Filter out the deleted job and write the new array back to the file
+        const remainingJobs = jobs.filter(job => job.id !== id);
+        await writeJobs(remainingJobs);
+
+        res.status(200).json({ success: true, message: "Scheduled job deleted successfully." });
+    } catch (error) {
+        console.error(`Error deleting job ${id}:`, error);
+        res.status(500).json({ message: "Failed to delete scheduled job." });
+    }
+});
+
+/**
  * @route POST /schedule
  * @description Receives content and a schedule time, and saves it for later publishing.
  */

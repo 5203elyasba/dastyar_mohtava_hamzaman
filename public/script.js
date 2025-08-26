@@ -216,6 +216,56 @@ document.addEventListener('DOMContentLoaded', () => {
         spinner.style.display = isLoading ? 'inline-block' : 'none';
     }
 
+    // --- Dashboard Modal Logic ---
+    const dashboardModal = document.getElementById('dashboardModal');
+    const viewScheduledBtn = document.getElementById('viewScheduledBtn');
+    const closeBtn = document.querySelector('.modal .close-button');
+    const dashboardContent = document.getElementById('dashboardContent');
+
+    async function loadAndDisplayScheduledJobs() {
+        dashboardContent.innerHTML = '<p class="loading-text">در حال بارگذاری لیست...</p>';
+        try {
+            const response = await fetch('/api/jobs');
+            const jobs = await response.json();
+            dashboardContent.innerHTML = '';
+            if (jobs.length === 0) {
+                dashboardContent.innerHTML = '<p>هیچ پست زمان‌بندی شده‌ای وجود ندارد.</p>';
+                return;
+            }
+            jobs.forEach(job => {
+                const jobElement = document.createElement('div');
+                jobElement.className = 'job-item';
+                const platforms = job.payload.platforms.join(', ');
+                const title = job.payload.wordpress?.wp_title || job.payload.telegram?.telegram_caption.substring(0, 30) + '...' || 'بدون عنوان';
+                const scheduleDate = new Date(job.scheduleTime).toLocaleString('fa-IR');
+
+                jobElement.innerHTML = `
+                    <div class="job-details">
+                        <p class="job-title">${title}</p>
+                        <p class="job-platforms">پلتفرم‌ها: ${platforms}</p>
+                        <p class="job-time">زمان انتشار: ${scheduleDate}</p>
+                    </div>
+                    <button type="button" class="delete-job-btn" data-job-id="${job.id}">حذف</button>
+                `;
+                dashboardContent.appendChild(jobElement);
+            });
+        } catch (error) {
+            dashboardContent.innerHTML = '<p style="color:red;">خطا در دریافت لیست.</p>';
+        }
+    }
+
+    async function deleteJob(jobId) {
+        if (!confirm('آیا از حذف این پست زمان‌بندی شده مطمئن هستید؟')) return;
+        try {
+            const response = await fetch(`/api/jobs/${jobId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Failed to delete job.');
+            // Refresh the list after deleting
+            await loadAndDisplayScheduledJobs();
+        } catch (error) {
+            alert('خطا در حذف پست.');
+        }
+    }
+
     // --- Event Listeners & Initial Calls ---
     platformCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateTabs));
     mediaFileInput.addEventListener('change', () => {
@@ -225,6 +275,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.toolbar-button').forEach(button => button.addEventListener('click', e => applyMarkdown(e.currentTarget.dataset.format)));
     enableSchedulingCheckbox.addEventListener('change', () => {
         scheduleTimeContainer.style.display = enableSchedulingCheckbox.checked ? 'block' : 'none';
+    });
+
+    viewScheduledBtn.addEventListener('click', () => {
+        dashboardModal.style.display = 'block';
+        loadAndDisplayScheduledJobs();
+    });
+    closeBtn.addEventListener('click', () => { dashboardModal.style.display = 'none'; });
+    window.addEventListener('click', (event) => {
+        if (event.target == dashboardModal) dashboardModal.style.display = 'none';
+    });
+    dashboardContent.addEventListener('click', (event) => {
+        if (event.target.classList.contains('delete-job-btn')) {
+            deleteJob(event.target.dataset.jobId);
+        }
     });
 
     initializeJalaliDatePicker();

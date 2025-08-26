@@ -39,6 +39,29 @@ header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #e9ec
 header h1 { color: var(--primary-color); }
 header p { color: var(--dark-gray-color); }
 
+.header-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.header-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.header-button:hover {
+    background-color: #5a6268;
+}
+
+
 /* --- Form & Fieldset Styling --- */
 form { display: flex; flex-direction: column; gap: 25px; }
 fieldset { border: 1px solid #e0e6ed; border-radius: 8px; padding: 20px; margin: 0; }
@@ -105,3 +128,74 @@ input#scheduleTime { background-color: #fff; cursor: pointer; }
 .status-area .status-icon-success { color: var(--success-color); }
 .status-area .status-icon-error { color: var(--error-color); }
 .status-area .error-message { font-size: 0.85rem; color: #721c24; }
+
+/* --- Modal & Dashboard Styling --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 700px;
+    border-radius: 12px;
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dashboard-content {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.job-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.job-item:last-child { border-bottom: none; }
+
+.job-details p { margin: 2px 0; }
+.job-details .job-title { font-weight: bold; }
+.job-details .job-platforms { font-size: 0.9em; color: #555; }
+.job-details .job-time { font-size: 0.9em; color: var(--primary-color); }
+
+.delete-job-btn {
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.delete-job-btn:hover { background-color: #c82333; }

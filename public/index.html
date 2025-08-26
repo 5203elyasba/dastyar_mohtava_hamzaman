@@ -17,6 +17,9 @@
 
     <div class="container">
         <header>
+            <div class="header-toolbar">
+                <button type="button" id="viewScheduledBtn" class="header-button">مشاهده پست‌های زمان‌بندی شده</button>
+            </div>
             <h1>دستیار محتوای تحریرچی</h1>
             <p>محتوای خود را به صورت حرفه‌ای و بهینه برای هر پلتفرم مدیریت و منتشر کنید.</p>
         </header>
@@ -96,6 +99,17 @@
         </form>
 
         <div id="statusArea" class="status-area"></div>
+    </div>
+
+    <!-- Dashboard Modal -->
+    <div id="dashboardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>پست‌های زمان‌بندی شده</h2>
+            <div id="dashboardContent" class="dashboard-content">
+                <!-- Scheduled jobs will be rendered here -->
+            </div>
+        </div>
     </div>
 
     <!-- 3rd Party Libraries -->
